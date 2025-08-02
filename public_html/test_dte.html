@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test DTE Buttons</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-link { 
+            display: inline-block; 
+            padding: 10px 15px; 
+            background: #333; 
+            color: white; 
+            text-decoration: none; 
+            margin: 5px; 
+            border-radius: 4px; 
+        }
+        .test-link:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <h1>Prueba de Botones DTE</h1>
+    <p>Las siguientes son las rutas que deberían funcionar:</p>
+    
+    <h3>Rutas de Prueba (con IDs de ejemplo):</h3>
+    <a href="public/1/lecturas/1/dte/boleta" class="test-link">DTE Boleta (Org ID: 1, Reading ID: 1)</a><br>
+    <a href="public/1/lecturas/1/dte/factura" class="test-link">DTE Factura (Org ID: 1, Reading ID: 1)</a><br>
+    <a href="public/2/lecturas/5/dte/boleta" class="test-link">DTE Boleta (Org ID: 2, Reading ID: 5)</a><br>
+    
+    <h3>Información del Sistema:</h3>
+    <p><strong>Servidor:</strong> <?php echo $_SERVER['SERVER_NAME'] ?? 'No detectado'; ?></p>
+    <p><strong>Puerto:</strong> <?php echo $_SERVER['SERVER_PORT'] ?? 'No detectado'; ?></p>
+    <p><strong>Directorio Raíz:</strong> <?php echo $_SERVER['DOCUMENT_ROOT'] ?? 'No detectado'; ?></p>
+    <p><strong>Script Actual:</strong> <?php echo $_SERVER['SCRIPT_NAME'] ?? 'No detectado'; ?></p>
+    
+    <script>
+        console.log('Test page loaded successfully');
+        console.log('Current URL:', window.location.href);
+    </script>
+</body>
+</html>
