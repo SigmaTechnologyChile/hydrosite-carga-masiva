@@ -73,6 +73,7 @@ class OrdersController extends Controller
 
         $sumTotal = 0;
         $qty = 0;
+        $invoice_type = 'boleta'; // Valor por defecto
 
         foreach ($services as $serviceId) {
 
@@ -86,6 +87,11 @@ class OrdersController extends Controller
 
             foreach ($readings as $reading) {
                 $qty++;
+                // Capturar el tipo de factura del primer reading
+                if ($qty == 1) {
+                    $invoice_type = $reading->invoice_type;
+                }
+                
                 $iva =  $reading->total * 0.19;
                 $total_con_iva =  $reading->total + $iva;
                 $orderItem = new OrderItem;
@@ -115,9 +121,9 @@ class OrdersController extends Controller
         $order->qty = $qty;
       //  $order->total = $sumTotal;
         $iva =  $sumTotal * 0.19;
-                $total_con_iva =  $sumTotal + $iva;
+        $total_con_iva =  $sumTotal + $iva;
 
-        $order->total =  ($reading->invoice_type == 'factura')? $total_con_iva :$sumTotal;
+        $order->total =  ($invoice_type == 'factura')? $total_con_iva : $sumTotal;
         $order->save();
 
         return redirect()->route('orgs.orders.show', ['id' => $org_id, 'order_code' => $order->order_code]);
