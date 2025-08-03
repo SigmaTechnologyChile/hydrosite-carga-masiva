@@ -714,6 +714,264 @@
         </div>
     </div>
 
+    <!-- Modal de Selección de Tipo de Documento -->
+    <div class="modal fade" id="seleccionDocumentoModal" tabindex="-1" aria-labelledby="seleccionDocumentoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header py-3 px-4" style="background: linear-gradient(90deg, #dc6868 0%, #b84a4a 100%); color: #fff;">
+                    <h4 class="modal-title fw-bold d-flex align-items-center gap-2" id="seleccionDocumentoModalLabel">
+                        <i class="fas fa-file-invoice fa-lg"></i> Seleccionar Tipo de Documento
+                    </h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-3">
+                    <div class="mb-4 p-3 rounded-3 bg-light border">
+                        <h6 class="fw-semibold mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Información</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Período:</strong> {{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</p>
+                                <p class="mb-0"><strong>Sector:</strong> <span id="sectorInfoSeleccion">Todos los sectores</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Lecturas completas:</strong> <span id="lecturasCompletasSeleccion" class="badge bg-success">0</span></p>
+                                <p class="mb-0"><strong>Documentos disponibles:</strong> <span id="documentosDisponibles" class="badge bg-primary">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Opción Boletas -->
+                        <div class="col-12">
+                            <div class="card border-success h-100">
+                                <div class="card-body p-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input fs-5" type="radio" name="tipoDocumento" id="radioBoletas" value="boletas">
+                                        <label class="form-check-label w-100" for="radioBoletas">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-receipt fa-2x text-success"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h5 class="mb-1 text-success fw-bold">Generar Boletas</h5>
+                                                    <p class="mb-0 text-muted">Boletas exentas (Código 41) - Sin IVA</p>
+                                                    <small class="text-success">✓ Para servicios básicos y exentos</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-success fs-6" id="contadorBoletas">0</span>
+                                                    <br><small class="text-muted">disponibles</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Opción Facturas -->
+                        <div class="col-12">
+                            <div class="card border-primary h-100">
+                                <div class="card-body p-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input fs-5" type="radio" name="tipoDocumento" id="radioFacturas" value="facturas">
+                                        <label class="form-check-label w-100" for="radioFacturas">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-file-invoice fa-2x text-primary"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h5 class="mb-1 text-primary fw-bold">Generar Facturas</h5>
+                                                    <p class="mb-0 text-muted">Facturas afectas (Código 33) - Con IVA</p>
+                                                    <small class="text-primary">✓ Para servicios comerciales e industriales</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-primary fs-6" id="contadorFacturas">0</span>
+                                                    <br><small class="text-muted">disponibles</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="alert alert-info d-flex align-items-center gap-2 mb-0">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Seleccione el tipo de documento que desea generar. Solo se procesarán los servicios que cumplan con las condiciones específicas de cada tipo.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer px-4 py-3 bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger enhanced-btn px-4 py-2" id="btnContinuarSeleccion" disabled>
+                        <i class="fas fa-arrow-right me-2"></i>Continuar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Generar Boletas -->
+    <div class="modal fade" id="facturarModal" tabindex="-1" aria-labelledby="facturarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header py-3 px-4" style="background: linear-gradient(90deg, #28a745 0%, #1e7e34 100%); color: #fff;">
+                    <h4 class="modal-title fw-bold d-flex align-items-center gap-2" id="facturarModalLabel">
+                        <i class="fas fa-receipt fa-lg"></i> Generar Boletas
+                    </h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-3">
+                    <!-- Información del período y sector -->
+                    <div class="mb-4 p-3 rounded-3 bg-light border">
+                        <h5 class="fw-semibold mb-2"><i class="fas fa-info-circle text-success me-2"></i>Información de Generación</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Período:</strong> {{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</p>
+                                <p class="mb-0"><strong>Sector:</strong> <span id="sectorInfo">Todos los sectores</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Lecturas completas:</strong> <span id="lecturasCompletasCount" class="badge bg-success fs-6">0</span></p>
+                                <p class="mb-0"><strong>Boletas a generar:</strong> <span id="boletasCount" class="badge bg-primary fs-6">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalle de las boletas a generar -->
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-receipt me-2"></i>Boletas Exentas (Código 41)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold text-success">Características del documento:</h6>
+                                    <ul class="list-unstyled mb-3">
+                                        <li><i class="fas fa-check text-success me-2"></i>Boletas no afectas a IVA</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Código tributario: 41</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Formato DTE oficial SII</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Solo lecturas con ambos valores registrados</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light p-3 rounded">
+                                        <h2 class="text-success mb-2" id="boletasCountDisplay">0</h2>
+                                        <p class="mb-0 fw-bold">Boletas</p>
+                                        <small class="text-muted">a procesar</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info d-flex align-items-center gap-2 mt-3">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Solo se procesarán los servicios que tengan <strong>lectura anterior</strong> y <strong>lectura actual</strong> registradas.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="alert alert-warning d-flex align-items-center gap-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span><strong>Importante:</strong> Una vez generadas las boletas, no podrán ser modificadas. Verifique que todas las lecturas estén correctas antes de proceder.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer px-4 py-3 bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success enhanced-btn px-4 py-2" id="btnProcesarBoletas">
+                        <i class="fas fa-cog me-2"></i>Generar <span id="btnBoletasCount">0</span> Boletas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Generar Facturas -->
+    <div class="modal fade" id="facturasModal" tabindex="-1" aria-labelledby="facturasModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header py-3 px-4" style="background: linear-gradient(90deg, #0d6efd 0%, #0842a0 100%); color: #fff;">
+                    <h4 class="modal-title fw-bold d-flex align-items-center gap-2" id="facturasModalLabel">
+                        <i class="fas fa-file-invoice fa-lg"></i> Generar Facturas
+                    </h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-3">
+                    <!-- Información del período y sector -->
+                    <div class="mb-4 p-3 rounded-3 bg-light border">
+                        <h5 class="fw-semibold mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Información de Generación</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Período:</strong> {{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</p>
+                                <p class="mb-0"><strong>Sector:</strong> <span id="sectorInfoFacturas">Todos los sectores</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Lecturas completas:</strong> <span id="lecturasCompletasCountFacturas" class="badge bg-success fs-6">0</span></p>
+                                <p class="mb-0"><strong>Facturas a generar:</strong> <span id="facturasCount" class="badge bg-primary fs-6">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalle de las facturas a generar -->
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-invoice me-2"></i>Facturas Afectas (Código 33)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold text-primary">Características del documento:</h6>
+                                    <ul class="list-unstyled mb-3">
+                                        <li><i class="fas fa-check text-primary me-2"></i>Facturas afectas a IVA (19%)</li>
+                                        <li><i class="fas fa-check text-primary me-2"></i>Código tributario: 33</li>
+                                        <li><i class="fas fa-check text-primary me-2"></i>Formato DTE oficial SII</li>
+                                        <li><i class="fas fa-check text-primary me-2"></i>Solo servicios con tipo "Factura"</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="bg-light p-3 rounded">
+                                        <h2 class="text-primary mb-2" id="facturasCountDisplay">0</h2>
+                                        <p class="mb-0 fw-bold">Facturas</p>
+                                        <small class="text-muted">a procesar</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info d-flex align-items-center gap-2 mt-3">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Solo se procesarán los servicios que tengan <strong>lectura anterior</strong>, <strong>lectura actual</strong> registradas y <strong>tipo de documento = Factura</strong>.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="alert alert-warning d-flex align-items-center gap-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span><strong>Importante:</strong> Una vez generadas las facturas, no podrán ser modificadas. Verifique que todas las lecturas estén correctas antes de proceder.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer px-4 py-3 bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary enhanced-btn px-4 py-2" id="btnProcesarFacturas">
+                        <i class="fas fa-cog me-2"></i>Generar <span id="btnFacturasCount">0</span> Facturas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 
@@ -821,89 +1079,49 @@ document.addEventListener('DOMContentLoaded', function() {
         btnFacturar.addEventListener('click', function() {
             console.log('=== CLICK EN BOTÓN FACTURAR ===');
             
-            // Verificar que SweetAlert funciona
-            if (typeof Swal === 'undefined') {
-                alert('SweetAlert2 no está cargado correctamente');
-                return;
-            }
-            
             // Obtener el sector seleccionado
             const sectorSelect = document.getElementById('sectorSelect');
             const sectorSeleccionado = sectorSelect ? sectorSelect.value : '';
             const nombreSector = sectorSelect && sectorSeleccionado ? 
-                sectorSelect.options[sectorSelect.selectedIndex].text : '';
+                sectorSelect.options[sectorSelect.selectedIndex].text : 'Todos los sectores';
             
-            // Obtener estado actual de las lecturas
-            const inputsLecturas = document.querySelectorAll('.current-reading-input-monthly');
-            const lecturasRegistradas = document.querySelectorAll('.badge.bg-success.fs-6');
+            // Obtener estado actual de las lecturas - solo las que tienen badge de success (completas)
+            const lecturasCompletas = document.querySelectorAll('.badge.bg-success.fs-6');
             
             console.log('Estado actual:', {
-                inputsLecturas: inputsLecturas.length,
-                lecturasRegistradas: lecturasRegistradas.length,
+                lecturasCompletas: lecturasCompletas.length,
                 sectorSeleccionado: sectorSeleccionado,
                 nombreSector: nombreSector
             });
             
-            // ESCENARIO 1: Hay inputs pendientes
-            if (inputsLecturas.length > 0) {
-                console.log('Hay inputs pendientes, mostrando mensaje de registro incompleto');
-                const mensajeSector = sectorSeleccionado ? ` en el sector "${nombreSector}"` : '';
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Registro Incompleto',
-                    text: `Faltan ${inputsLecturas.length} lecturas por registrar${mensajeSector}. Debe completar todas las lecturas antes de facturar.`,
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#dc6868'
-                });
-                return;
-            }
-            
-            // ESCENARIO 2: No hay inputs pendientes pero tampoco hay lecturas registradas
-            if (lecturasRegistradas.length === 0) {
-                console.log('No hay lecturas registradas, mostrando mensaje de advertencia');
+            // Verificar que hay lecturas completas para facturar
+            if (lecturasCompletas.length === 0) {
                 const mensajeSector = sectorSeleccionado ? ` para el sector "${nombreSector}"` : ' en este período';
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Sin Lecturas',
-                    text: `No hay lecturas registradas para facturar${mensajeSector}.`,
+                    title: 'Sin Lecturas Completas',
+                    html: `
+                        <p>No hay lecturas completas para procesar${mensajeSector}.</p>
+                        <p class="text-muted">Para generar documentos, se requiere que los servicios tengan tanto la <strong>lectura anterior</strong> como la <strong>lectura actual</strong> registradas.</p>
+                    `,
                     confirmButtonText: 'Entendido',
                     confirmButtonColor: '#dc6868'
                 });
                 return;
             }
             
-            // ESCENARIO 3: Todas las lecturas completas - Mostrar confirmación
-            console.log('Todas las lecturas están completas, mostrando mensaje de confirmación');
-            const tituloSector = sectorSeleccionado ? 
-                ` del sector "${nombreSector}"` : '';
-            const textoDetalle = sectorSeleccionado ? 
-                `Se procesarán ${lecturasRegistradas.length} lecturas del sector "${nombreSector}" del período actual` :
-                `Se procesarán ${lecturasRegistradas.length} lecturas del período actual`;
-                
-            Swal.fire({
-                title: `¿Está seguro(a) de comenzar el proceso de facturación de ${lecturasRegistradas.length} servicios registrados${tituloSector}?`,
-                text: textoDetalle,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#dc6868',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, Iniciar Facturación',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const mensajeExito = sectorSeleccionado ? 
-                        `¡El proceso de facturación del sector "${nombreSector}" ha comenzado exitosamente!` :
-                        '¡El proceso de facturación ha comenzado exitosamente!';
-                        
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Facturación Iniciada!',
-                        text: mensajeExito,
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#28a745'
-                    });
-                }
-            });
+            // Actualizar información del modal de selección
+            document.getElementById('sectorInfoSeleccion').textContent = nombreSector;
+            document.getElementById('lecturasCompletasSeleccion').textContent = lecturasCompletas.length;
+            document.getElementById('documentosDisponibles').textContent = lecturasCompletas.length;
+            
+            // Por ahora, simular conteos - en producción estos vendrían del servidor
+            document.getElementById('contadorBoletas').textContent = lecturasCompletas.length;
+            document.getElementById('contadorFacturas').textContent = Math.floor(lecturasCompletas.length * 0.3); // Simular que 30% son facturas
+            
+            // Mostrar el modal de selección
+            const seleccionModal = new bootstrap.Modal(document.getElementById('seleccionDocumentoModal'));
+            seleccionModal.show();
         });
     }
 
@@ -1314,9 +1532,387 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 
+    // ===== CÓDIGO PARA MODAL DE SELECCIÓN DE DOCUMENTOS =====
+    const seleccionDocumentoModal = document.getElementById('seleccionDocumentoModal');
+    if (seleccionDocumentoModal) {
+        const radioBoletas = document.getElementById('radioBoletas');
+        const radioFacturas = document.getElementById('radioFacturas');
+        const btnContinuarSeleccion = document.getElementById('btnContinuarSeleccion');
+        
+        // Manejar cambios en los radio buttons
+        function actualizarBotonContinuar() {
+            const tipoSeleccionado = document.querySelector('input[name="tipoDocumento"]:checked');
+            btnContinuarSeleccion.disabled = !tipoSeleccionado;
+            
+            if (tipoSeleccionado) {
+                btnContinuarSeleccion.classList.remove('disabled');
+                btnContinuarSeleccion.innerHTML = `<i class="fas fa-arrow-right me-2"></i>Continuar con ${tipoSeleccionado.value === 'boletas' ? 'Boletas' : 'Facturas'}`;
+            } else {
+                btnContinuarSeleccion.classList.add('disabled');
+                btnContinuarSeleccion.innerHTML = '<i class="fas fa-arrow-right me-2"></i>Continuar';
+            }
+        }
+        
+        radioBoletas.addEventListener('change', actualizarBotonContinuar);
+        radioFacturas.addEventListener('change', actualizarBotonContinuar);
+        
+        // Manejar click del botón continuar
+        btnContinuarSeleccion.addEventListener('click', function() {
+            const tipoSeleccionado = document.querySelector('input[name="tipoDocumento"]:checked');
+            if (!tipoSeleccionado) return;
+            
+            // Cerrar modal de selección
+            const modalInstance = bootstrap.Modal.getInstance(seleccionDocumentoModal);
+            modalInstance.hide();
+            
+            // Obtener información común
+            const sectorInfo = document.getElementById('sectorInfoSeleccion').textContent;
+            const lecturasCompletas = parseInt(document.getElementById('lecturasCompletasSeleccion').textContent);
+            
+            // Abrir el modal correspondiente
+            if (tipoSeleccionado.value === 'boletas') {
+                // Actualizar información del modal de boletas
+                document.getElementById('sectorInfo').textContent = sectorInfo;
+                
+                // Mostrar modal de boletas
+                setTimeout(() => {
+                    const boletasModal = new bootstrap.Modal(document.getElementById('facturarModal'));
+                    boletasModal.show();
+                }, 300);
+                
+            } else if (tipoSeleccionado.value === 'facturas') {
+                // Verificar si hay facturas disponibles
+                const facturasDisponibles = parseInt(document.getElementById('contadorFacturas').textContent);
+                
+                if (facturasDisponibles === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sin Facturas Disponibles',
+                        html: `
+                            <p>No hay servicios configurados para generar facturas en este período.</p>
+                            <div class="alert alert-info text-start mt-3">
+                                <strong>Para generar facturas se requiere:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Lecturas completas (anterior y actual)</li>
+                                    <li>Tipo de documento = "Factura"</li>
+                                    <li>Servicio habilitado para facturación</li>
+                                </ul>
+                            </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return;
+                }
+                
+                // Actualizar información del modal de facturas
+                document.getElementById('sectorInfoFacturas').textContent = sectorInfo;
+                
+                // Mostrar modal de facturas
+                setTimeout(() => {
+                    const facturasModal = new bootstrap.Modal(document.getElementById('facturasModal'));
+                    facturasModal.show();
+                }, 300);
+            }
+        });
+        
+        // Limpiar selección al cerrar modal
+        seleccionDocumentoModal.addEventListener('hidden.bs.modal', function() {
+            radioBoletas.checked = false;
+            radioFacturas.checked = false;
+            actualizarBotonContinuar();
+        });
+    }
 
 
-    // ===== CÓDIGO PARA MODAL DE CARGA MASIVA =====
+
+    // ===== CÓDIGO PARA MODAL DE BOLETAS =====
+    const facturarModal = document.getElementById('facturarModal');
+    if (facturarModal) {
+        const btnProcesarBoletas = document.getElementById('btnProcesarBoletas');
+        
+        // Función para contar lecturas completas (con lectura anterior y actual)
+        function contarLecturasCompletas() {
+            // Contar las filas que tienen badge bg-success (lecturas registradas)
+            const lecturasRegistradas = document.querySelectorAll('.badge.bg-success.fs-6');
+            return lecturasRegistradas.length;
+        }
+        
+        // Actualizar contadores del modal cuando se abre
+        facturarModal.addEventListener('show.bs.modal', function() {
+            const lecturasCompletas = contarLecturasCompletas();
+            
+            // Actualizar todos los elementos que muestran el conteo
+            document.getElementById('lecturasCompletasCount').textContent = lecturasCompletas;
+            document.getElementById('boletasCount').textContent = lecturasCompletas;
+            document.getElementById('boletasCountDisplay').textContent = lecturasCompletas;
+            document.getElementById('btnBoletasCount').textContent = lecturasCompletas;
+            
+            console.log('Modal abierto - Lecturas completas encontradas:', lecturasCompletas);
+            
+            // Habilitar/deshabilitar botón según si hay lecturas para procesar
+            if (lecturasCompletas > 0) {
+                btnProcesarBoletas.disabled = false;
+                btnProcesarBoletas.classList.remove('disabled');
+            } else {
+                btnProcesarBoletas.disabled = true;
+                btnProcesarBoletas.classList.add('disabled');
+            }
+        });
+        
+        // Manejar click del botón procesar boletas
+        btnProcesarBoletas.addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            const lecturasCompletas = contarLecturasCompletas();
+            const sectorInfo = document.getElementById('sectorInfo').textContent;
+            
+            console.log('=== INICIANDO PROCESO DE BOLETAS ===');
+            console.log('Lecturas completas:', lecturasCompletas);
+            console.log('Sector:', sectorInfo);
+            
+            // Confirmar procesamiento
+            Swal.fire({
+                title: '¿Confirmar Generación de Boletas?',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Se generarán ${lecturasCompletas} boletas exentas</strong></p>
+                        <p><strong>Período:</strong> {{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</p>
+                        <p><strong>Sector:</strong> ${sectorInfo}</p>
+                        <p><strong>Código tributario:</strong> 41 (Boletas exentas)</p>
+                        <hr>
+                        <p class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Una vez generadas, las boletas no podrán ser modificadas.</p>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check me-2"></i>Sí, Generar Boletas',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+                width: '500px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Cerrar modal de confirmación y procesar
+                    procesarGeneracionBoletas(lecturasCompletas, sectorInfo);
+                }
+            });
+        });
+        
+        // Función para procesar la generación de boletas
+        function procesarGeneracionBoletas(cantidad, sector) {
+            console.log('Procesando generación de boletas...');
+            
+            // Mostrar indicador de procesamiento
+            Swal.fire({
+                title: 'Generando Boletas...',
+                html: `
+                    <div class="text-center">
+                        <div class="spinner-border text-success mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Procesando ${cantidad} boletas exentas</p>
+                        <p class="text-muted">Por favor espere...</p>
+                    </div>
+                `,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    // Aquí iría la llamada AJAX al controlador
+                    // Por ahora simulamos el proceso
+                    setTimeout(() => {
+                        // Cerrar modal de procesamiento
+                        Swal.close();
+                        
+                        // Mostrar mensaje de éxito
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Proceso Completo!',
+                            html: `
+                                <div class="text-center">
+                                    <h5 class="text-success mb-3">Boletas generadas exitosamente</h5>
+                                    <div class="alert alert-success text-start">
+                                        <strong>Resumen del proceso:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Boletas generadas: <strong>${cantidad}</strong></li>
+                                            <li>Código tributario: <strong>41 (Exentas)</strong></li>
+                                            <li>Sector: <strong>${sector}</strong></li>
+                                            <li>Período: <strong>{{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</strong></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#28a745',
+                            timer: 3000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            // Cerrar el modal principal después del mensaje de éxito
+                            const modalInstance = bootstrap.Modal.getInstance(facturarModal);
+                            modalInstance.hide();
+                            
+                            // Recargar la página para actualizar el estado
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        });
+                    }, 2500); // Simular 2.5 segundos de procesamiento
+                }
+            });
+        }
+        
+        // Limpiar estado al cerrar modal
+        facturarModal.addEventListener('hidden.bs.modal', function() {
+            console.log('Modal de boletas cerrado');
+        });
+    }
+
+    // ===== CÓDIGO PARA MODAL DE FACTURAS =====
+    const facturasModal = document.getElementById('facturasModal');
+    if (facturasModal) {
+        const btnProcesarFacturas = document.getElementById('btnProcesarFacturas');
+        
+        // Función para contar facturas disponibles (lecturas completas + tipo factura)
+        function contarFacturasDisponibles() {
+            // Por ahora simular que 30% de las lecturas completas son facturas
+            // En producción esto vendría del servidor basado en el tipo de servicio
+            const lecturasRegistradas = document.querySelectorAll('.badge.bg-success.fs-6');
+            return Math.floor(lecturasRegistradas.length * 0.3);
+        }
+        
+        // Actualizar contadores del modal cuando se abre
+        facturasModal.addEventListener('show.bs.modal', function() {
+            const facturasDisponibles = contarFacturasDisponibles();
+            const lecturasCompletas = document.querySelectorAll('.badge.bg-success.fs-6').length;
+            
+            // Actualizar todos los elementos que muestran el conteo
+            document.getElementById('lecturasCompletasCountFacturas').textContent = lecturasCompletas;
+            document.getElementById('facturasCount').textContent = facturasDisponibles;
+            document.getElementById('facturasCountDisplay').textContent = facturasDisponibles;
+            document.getElementById('btnFacturasCount').textContent = facturasDisponibles;
+            
+            console.log('Modal de facturas abierto - Facturas disponibles:', facturasDisponibles);
+            
+            // Habilitar/deshabilitar botón según si hay facturas para procesar
+            if (facturasDisponibles > 0) {
+                btnProcesarFacturas.disabled = false;
+                btnProcesarFacturas.classList.remove('disabled');
+            } else {
+                btnProcesarFacturas.disabled = true;
+                btnProcesarFacturas.classList.add('disabled');
+            }
+        });
+        
+        // Manejar click del botón procesar facturas
+        btnProcesarFacturas.addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            const facturasDisponibles = contarFacturasDisponibles();
+            const sectorInfo = document.getElementById('sectorInfoFacturas').textContent;
+            
+            console.log('=== INICIANDO PROCESO DE FACTURAS ===');
+            console.log('Facturas disponibles:', facturasDisponibles);
+            console.log('Sector:', sectorInfo);
+            
+            // Confirmar procesamiento
+            Swal.fire({
+                title: '¿Confirmar Generación de Facturas?',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Se generarán ${facturasDisponibles} facturas afectas</strong></p>
+                        <p><strong>Período:</strong> {{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</p>
+                        <p><strong>Sector:</strong> ${sectorInfo}</p>
+                        <p><strong>Código tributario:</strong> 33 (Facturas afectas)</p>
+                        <p><strong>IVA:</strong> 19% incluido</p>
+                        <hr>
+                        <p class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Una vez generadas, las facturas no podrán ser modificadas.</p>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check me-2"></i>Sí, Generar Facturas',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+                width: '500px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Cerrar modal de confirmación y procesar
+                    procesarGeneracionFacturas(facturasDisponibles, sectorInfo);
+                }
+            });
+        });
+        
+        // Función para procesar la generación de facturas
+        function procesarGeneracionFacturas(cantidad, sector) {
+            console.log('Procesando generación de facturas...');
+            
+            // Mostrar indicador de procesamiento
+            Swal.fire({
+                title: 'Generando Facturas...',
+                html: `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Procesando ${cantidad} facturas afectas</p>
+                        <p class="text-muted">Calculando IVA y totales...</p>
+                    </div>
+                `,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    // Aquí iría la llamada AJAX al controlador
+                    // Por ahora simulamos el proceso
+                    setTimeout(() => {
+                        // Cerrar modal de procesamiento
+                        Swal.close();
+                        
+                        // Mostrar mensaje de éxito
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Proceso Completo!',
+                            html: `
+                                <div class="text-center">
+                                    <h5 class="text-primary mb-3">Facturas generadas exitosamente</h5>
+                                    <div class="alert alert-success text-start">
+                                        <strong>Resumen del proceso:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Facturas generadas: <strong>${cantidad}</strong></li>
+                                            <li>Código tributario: <strong>33 (Afectas)</strong></li>
+                                            <li>IVA aplicado: <strong>19%</strong></li>
+                                            <li>Sector: <strong>${sector}</strong></li>
+                                            <li>Período: <strong>{{ str_pad(date('m'), 2, '0', STR_PAD_LEFT) }}/{{ date('Y') }}</strong></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#0d6efd',
+                            timer: 3000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            // Cerrar el modal principal después del mensaje de éxito
+                            const modalInstance = bootstrap.Modal.getInstance(facturasModal);
+                            modalInstance.hide();
+                            
+                            // Recargar la página para actualizar el estado
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        });
+                    }, 2500); // Simular 2.5 segundos de procesamiento
+                }
+            });
+        }
+        
+        // Limpiar estado al cerrar modal
+        facturasModal.addEventListener('hidden.bs.modal', function() {
+            console.log('Modal de facturas cerrado');
+        });
+    }
+
+    // ===== CÓDIGO PARA MODAL DE CARGA MASIVA (EXISTENTE) =====
     const uploadModal = document.getElementById('uploadModal');
 
     if (uploadModal) {
