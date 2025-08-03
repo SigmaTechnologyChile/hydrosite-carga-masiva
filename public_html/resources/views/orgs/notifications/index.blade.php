@@ -14,6 +14,14 @@
     </div>
 
     <section class="section dashboard">
+        <!-- DEBUG INFO -->
+        <div class="alert alert-info mb-3">
+            <strong>Debug:</strong> Org ID: {{ $org->id }} | 
+            Notificaciones para esta org: {{ $stats['total'] }} |
+            Variable notifications: {{ $notifications->count() }} registros |
+            Tipo: {{ gettype($notifications) }}
+        </div>
+        
         <!-- Estadísticas rápidas -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -118,7 +126,7 @@
                         </div>
                         
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" onclick="showSendingMessage()">
                                 <i class="bi bi-send"></i> Enviar Notificación
                             </button>
                             <button type="reset" class="btn btn-outline-secondary">
@@ -196,6 +204,18 @@
                 </div>
 
                 <div class="table-responsive">
+                    <!-- DEBUG TABLA -->
+                    @if($notifications->count() > 0)
+                        <div class="alert alert-warning">
+                            <strong>Debug Tabla:</strong> Se encontraron {{ $notifications->count() }} notificaciones para mostrar.
+                            <br>Primera notificación: ID={{ $notifications->first()->id }}, Título="{{ $notifications->first()->title }}"
+                        </div>
+                    @else
+                        <div class="alert alert-danger">
+                            <strong>Debug Tabla:</strong> No se encontraron notificaciones para mostrar (variable $notifications está vacía)
+                        </div>
+                    @endif
+                    
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
@@ -362,6 +382,12 @@
         // Aquí puedes implementar la lógica para mostrar detalles
         // Por ejemplo, usando un modal o redirigiendo a una página de detalles
         console.log('Mostrando detalles de notificación ID:', notificationId);
+    }
+    
+    // Función para mostrar mensaje al enviar
+    function showSendingMessage() {
+        console.log('Enviando notificación...');
+        // Opcional: agregar un loader o mensaje
     }
 </script>
 @endpush

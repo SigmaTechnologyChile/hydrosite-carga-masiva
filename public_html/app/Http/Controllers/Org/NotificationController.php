@@ -21,6 +21,8 @@ class NotificationController extends Controller
 {
     public function index($id)
     {
+        Log::info('=== MÉTODO INDEX EJECUTADO === Org ID: ' . $id);
+        
         $org = Org::findOrFail($id);
         $activeLocations = Location::where('org_id', $org->id)->get();
         
@@ -35,10 +37,14 @@ class NotificationController extends Controller
         
         // Intentar obtener notificaciones si la tabla existe
         try {
+            Log::info('Buscando notificaciones para org_id: ' . $org->id);
+            
             $notifications = Notification::where('org_id', $org->id)
                 ->orderBy('created_at', 'desc')
                 ->limit(20)
                 ->get();
+            
+            Log::info('Notificaciones encontradas: ' . $notifications->count());
             
             // Calcular estadísticas
             $stats = [
@@ -47,6 +53,8 @@ class NotificationController extends Controller
                 'pendientes' => Notification::where('org_id', $org->id)->where('email_status', 'pending')->count(),
                 'fallidas' => Notification::where('org_id', $org->id)->where('email_status', 'failed')->count(),
             ];
+            
+            Log::info('Estadísticas calculadas: ', $stats);
         } catch (\Exception $e) {
             Log::warning('Tabla notifications no existe aún: ' . $e->getMessage());
             // Usamos los valores por defecto ya inicializados
@@ -58,7 +66,7 @@ class NotificationController extends Controller
     public function store(Request $request, $id)
     {
         try {
-            Log::info('Iniciando proceso de notificación', ["data" => $request->all()]);
+            Log::info('=== INICIANDO STORE === Datos recibidos:', $request->all());
 
             $request->validate([
                 'title' => 'required|string|max:255',
@@ -71,7 +79,7 @@ class NotificationController extends Controller
             $message = $request->input('message');
             $sendToAll = $request->has('send_to_all');
 
-            Log::info('Parámetros recibidos:', [
+            Log::info('Parámetros procesados:', [
                 'title' => $title,
                 'sendToAll' => $sendToAll,
                 'orgId' => $org->id
@@ -128,16 +136,7 @@ class NotificationController extends Controller
                 try {
                     Log::info('SIMULANDO envío de correo a: ' . $user->email);
                     
-                    // Verificar configuración SMTP antes de enviar
-                    Log::info('Configuración SMTP (MODO SIMULACIÓN):', [
-                        'host' => Config::get('mail.mailers.smtp.host'),
-                        'port' => Config::get('mail.mailers.smtp.port'),
-                        'encryption' => Config::get('mail.mailers.smtp.encryption'),
-                        'from_address' => Config::get('mail.from.address')
-                    ]);
-
                     // SIMULACIÓN: En lugar de enviar, solo registramos
-                    // Mail::to($user->email)->send(new NotificationMail($title, $message, $org, $user));
                     Log::info('SIMULACIÓN: Correo enviado exitosamente a: ' . $user->email);
                     $sentCount++;
                     
@@ -161,28 +160,9 @@ class NotificationController extends Controller
                     
                 } catch (\Exception $e) {
                     Log::error('Error simulando envío a ' . $user->email, [
-                        'error' => $e->getMessage(),
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine()
+                        'error' => $e->getMessage()
                     ]);
                     $errorCount++;
-                    
-                    // Guardar notificación fallida (simulada)
-                    try {
-                        Notification::create([
-                            'org_id' => $org->id,
-                            'title' => $title,
-                            'message' => $message,
-                            'recipient_email' => $user->email,
-                            'recipient_name' => $user->name,
-                            'send_method' => 'email',
-                            'email_status' => 'failed',
-                            'email_error' => $e->getMessage(),
-                            'status' => 'failed'
-                        ]);
-                    } catch (\Exception $dbError) {
-                        Log::warning('No se pudo guardar error en BD: ' . $dbError->getMessage());
-                    }
                 }
             }
 
@@ -192,20 +172,21 @@ class NotificationController extends Controller
                 'total' => $users->count()
             ]);
 
-            $message = "Notificación SIMULADA enviada. Enviados: {$sentCount}, Errores: {$errorCount}";
+            $successMessage = "Notificación enviada. Enviados: {$sentCount}, Errores: {$errorCount}";
+            
+            Log::info('=== REDIRIGIENDO === Mensaje: ' . $successMessage);
             
             if ($errorCount == 0) {
-                return Redirect::back()->with('success', $message);
+                return Redirect::back()->with('success', $successMessage);
             } else {
-                return Redirect::back()->with('warning', $message);
+                return Redirect::back()->with('warning', $successMessage);
             }
 
         } catch (\Exception $e) {
             Log::error('Error general en el proceso:', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine()
             ]);
 
             return Redirect::back()
