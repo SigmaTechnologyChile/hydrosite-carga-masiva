@@ -96,15 +96,15 @@ class NotificationController extends Controller
 
 
 
-            // Obtener destinatarios (members)
+            // Obtener destinatarios (members) - VERSIÓN SIMPLIFICADA
 
             if ($sendToAll) {
 
                 // Obtener todos los members de esta org que tienen email
-                $members = Member::whereHas('orgs', function($query) use ($org) {
-                        $query->where('org_id', $org->id);
-                    })
-                    ->whereNotNull('email')
+                $members = Member::join('orgs_members', 'members.id', '=', 'orgs_members.member_id')
+                    ->where('orgs_members.org_id', $org->id)
+                    ->whereNotNull('members.email')
+                    ->select('members.*')
                     ->get();
                     
                 Log::info('Enviando a todos los members. Total:', ['count' => $members->count()]);
@@ -113,14 +113,14 @@ class NotificationController extends Controller
 
                 $sectorIds = $request->input('sectors', []);
 
-                // Obtener members que tienen services en los sectores seleccionados
-                $members = Member::whereHas('orgs', function($query) use ($org) {
-                        $query->where('org_id', $org->id);
-                    })
-                    ->whereNotNull('email')
-                    ->whereHas('services', function($serviceQuery) use ($sectorIds) {
-                        $serviceQuery->whereIn('location_id', $sectorIds);
-                    })
+                // Obtener members que tienen services en los sectores seleccionados - SIMPLIFICADO
+                $members = Member::join('orgs_members', 'members.id', '=', 'orgs_members.member_id')
+                    ->join('services', 'members.rut', '=', 'services.rut')
+                    ->where('orgs_members.org_id', $org->id)
+                    ->whereIn('services.location_id', $sectorIds)
+                    ->whereNotNull('members.email')
+                    ->select('members.*')
+                    ->distinct()
                     ->get();
 
                 Log::info('Enviando a sectores específicos:', [
