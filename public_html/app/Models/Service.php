@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     protected $fillable = [
-        'id', 'org_id', 'member_id', 'location_id', 'nro', 'nombre', 'telefono', 'order_by', 'numero'
+        'id', 'org_id', 'member_id', 'locality_id', 'nro', 'nombre', 'telefono', 'order_by', 'numero', 'rut', 'sector'
     ];
 
     public function member()
@@ -17,7 +17,7 @@ class Service extends Model
     
     public function location()
     {
-        return $this->belongsTo(Location::class, 'location_id');
+        return $this->belongsTo(Location::class, 'locality_id');
     }
     
     public function organization()

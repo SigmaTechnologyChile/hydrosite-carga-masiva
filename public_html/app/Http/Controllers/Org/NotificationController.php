@@ -117,7 +117,7 @@ class NotificationController extends Controller
                 $members = collect();
                 
                 // Primero obtener todos los services de los sectores seleccionados
-                $services = Service::whereIn('location_id', $sectorIds)
+                $services = Service::whereIn('locality_id', $sectorIds)
                     ->where('org_id', $org->id)
                     ->get();
                 
@@ -144,45 +144,74 @@ class NotificationController extends Controller
 
             }
 
-
+            // Verificar si encontramos members antes de continuar
+            if ($members->count() == 0) {
+                Log::warning('⚠️ No se encontraron members para enviar notificaciones');
+                return Redirect::back()->with('warning', '⚠️ No se encontraron destinatarios válidos para enviar la notificación. Verifica que los miembros tengan email configurado.');
+            }
 
             // Enviar notificación por email
 
             Log::info('Iniciando envío de notificaciones');
-
             Log::info('Iniciando envío de notificaciones', ['members' => $members]);
 
+            $sentCount = 0;
+            $failedCount = 0;
+            $errors = [];
 
             foreach ($members as $member) {
                 Log::info('Iniciando envío de notificaciones lista members', ['member_email' => $member->email]);
                 
-            try {
-        // Verificar configuración SMTP antes de enviar
-        Log::info('Configuración SMTP:', [
-            'host' => Config::get('mail.mailers.smtp.host'),
-            'port' => Config::get('mail.mailers.smtp.port'),
-            'encryption' => Config::get('mail.mailers.smtp.encryption'),
-            'from_address' => Config::get('mail.from.address')
-        ]);
+                try {
+                    // Verificar configuración SMTP antes de enviar
+                    Log::info('Configuración SMTP:', [
+                        'host' => Config::get('mail.mailers.smtp.host'),
+                        'port' => Config::get('mail.mailers.smtp.port'),
+                        'encryption' => Config::get('mail.mailers.smtp.encryption'),
+                        'from_address' => Config::get('mail.from.address')
+                    ]);
 
-        Mail::to($member->email)->send(new NotificationMail($title, $message, $org, $member));
-        Log::info('Correo enviado exitosamente a: ' . $member->email);
-    } catch (\Exception $e) {
-        Log::error('Error enviando correo a ' . $member->email, [
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-
+                    Mail::to($member->email)->send(new NotificationMail($title, $message, $org, $member));
+                    Log::info('✅ Correo enviado exitosamente a: ' . $member->email);
+                    $sentCount++;
+                    
+                } catch (\Exception $e) {
+                    $failedCount++;
+                    $errorMessage = $e->getMessage();
+                    $errors[] = "Error enviando a {$member->email}: {$errorMessage}";
+                    
+                    Log::error('❌ Error enviando correo a ' . $member->email, [
+                        'error' => $errorMessage,
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
             }
 
-            Log::info('Proceso de envío finalizado');
+            Log::info('📊 Proceso de envío finalizado:', [
+                'total_members' => $members->count(),
+                'sent_successfully' => $sentCount,
+                'failed' => $failedCount
+            ]);
 
-
-
-            return Redirect::back()->with('success', 'Notificación enviada correctamente.');
+            // Preparar mensaje de respuesta basado en resultados
+            if ($sentCount > 0 && $failedCount == 0) {
+                // Todos los envíos exitosos
+                return Redirect::back()->with('success', "✅ Notificación enviada exitosamente a {$sentCount} destinatario(s).");
+            } elseif ($sentCount > 0 && $failedCount > 0) {
+                // Algunos exitosos, algunos fallaron
+                $errorDetails = implode(' | ', array_slice($errors, 0, 3)); // Mostrar solo los primeros 3 errores
+                return Redirect::back()
+                    ->with('warning', "⚠️ Parcialmente enviado: {$sentCount} exitosos, {$failedCount} fallidos.")
+                    ->with('error_details', $errorDetails);
+            } else {
+                // Todos fallaron
+                $errorDetails = implode(' | ', array_slice($errors, 0, 3));
+                return Redirect::back()
+                    ->with('error', "❌ Error: No se pudo enviar a ningún destinatario. Detalles: {$errorDetails}")
+                    ->withInput();
+            }
 
 
 
