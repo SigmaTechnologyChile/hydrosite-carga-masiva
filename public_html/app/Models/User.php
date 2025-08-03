@@ -76,4 +76,9 @@ public function member()
     return $this->hasOne(Member::class, 'rut', 'rut')
         ->whereNotNull('rut'); // Por seguridad
 }
+
+public function organization()
+{
+    return $this->belongsTo(Org::class, 'org_id');
+}
 }

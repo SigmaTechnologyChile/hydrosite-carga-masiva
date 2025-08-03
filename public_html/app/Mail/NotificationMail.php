@@ -28,13 +28,13 @@ class NotificationMail extends Mailable
 
     public $org;
 
-    public $user;
+    public $member;
 
     public $activeLocations;
 
 
 
-    public function __construct($title, $message, $org, $user)
+    public function __construct($title, $message, $org, $member)
 
     {
 
@@ -44,7 +44,7 @@ class NotificationMail extends Mailable
 
         $this->org = $org;
 
-        $this->user = $user;
+        $this->member = $member;
 
         $this->activeLocations = \App\Models\Location::where('org_id', $org->id)->get();
 
@@ -68,7 +68,7 @@ class NotificationMail extends Mailable
 
                 'org' => $this->org,
 
-                'user' => $this->user,
+                'member' => $this->member,
                  'activeLocations' => $this->activeLocations,
 
             ]);

@@ -26,6 +26,10 @@ use App\Models\User;
 
 use App\Models\Org;
 
+use App\Models\Member;
+
+use App\Models\Service;
+
 use Illuminate\Support\Facades\Redirect;
 
 
@@ -92,31 +96,38 @@ class NotificationController extends Controller
 
 
 
-            // Obtener destinatarios
+            // Obtener destinatarios (members)
 
             if ($sendToAll) {
 
-                $users = User::where('org_id', $org->id)->whereNotNull('email')->get();
-
-                Log::info('Enviando a todos los usuarios. Total:', ['count' => $users->count()]);
+                // Obtener todos los members de esta org que tienen email
+                $members = Member::whereHas('orgs', function($query) use ($org) {
+                        $query->where('org_id', $org->id);
+                    })
+                    ->whereNotNull('email')
+                    ->get();
+                    
+                Log::info('Enviando a todos los members. Total:', ['count' => $members->count()]);
 
             } else {
 
                 $sectorIds = $request->input('sectors', []);
 
-                $users = User::where('org_id', $org->id)
-
-                    ->whereIn('location_id', $sectorIds)
-
+                // Obtener members que tienen services en los sectores seleccionados
+                $members = Member::whereHas('orgs', function($query) use ($org) {
+                        $query->where('org_id', $org->id);
+                    })
                     ->whereNotNull('email')
-
+                    ->whereHas('services', function($serviceQuery) use ($sectorIds) {
+                        $serviceQuery->whereIn('location_id', $sectorIds);
+                    })
                     ->get();
 
                 Log::info('Enviando a sectores específicos:', [
 
                     'sectors' => $sectorIds,
 
-                    'userCount' => $users->count()
+                    'memberCount' => $members->count()
 
                 ]);
 
@@ -128,12 +139,12 @@ class NotificationController extends Controller
 
             Log::info('Iniciando envío de notificaciones');
 
-            Log::info('Iniciando envío de notificaciones', ['users' => $users]);
+            Log::info('Iniciando envío de notificaciones', ['members' => $members]);
 
 
-            foreach ($users as $user) {
-                Log::info('Iniciando envío de notificaciones lista usuarios', ['users' => $users]);
-              //  Log::info('Iniciando envío de notificaciones mail unico', ['users' => $users->email]);
+            foreach ($members as $member) {
+                Log::info('Iniciando envío de notificaciones lista members', ['member_email' => $member->email]);
+                
             try {
         // Verificar configuración SMTP antes de enviar
         Log::info('Configuración SMTP:', [
@@ -143,10 +154,10 @@ class NotificationController extends Controller
             'from_address' => Config::get('mail.from.address')
         ]);
 
-        Mail::to($user->email)->send(new NotificationMail($title, $message, $org, $user));
-        Log::info('Correo enviado exitosamente a: ' . $user->email);
+        Mail::to($member->email)->send(new NotificationMail($title, $message, $org, $member));
+        Log::info('Correo enviado exitosamente a: ' . $member->email);
     } catch (\Exception $e) {
-        Log::error('Error enviando correo a ' . $user->email, [
+        Log::error('Error enviando correo a ' . $member->email, [
             'error' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
