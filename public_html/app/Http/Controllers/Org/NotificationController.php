@@ -192,7 +192,7 @@ class NotificationController extends Controller
                 'total' => $users->count()
             ]);
 
-            $message = "Notificación enviada. Enviados: {$sentCount}, Errores: {$errorCount}";
+            $message = "Notificación SIMULADA enviada. Enviados: {$sentCount}, Errores: {$errorCount}";
             
             if ($errorCount == 0) {
                 return Redirect::back()->with('success', $message);
