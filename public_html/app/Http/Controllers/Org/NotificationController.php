@@ -104,6 +104,7 @@ class NotificationController extends Controller
                 $members = Member::join('orgs_members', 'members.id', '=', 'orgs_members.member_id')
                     ->where('orgs_members.org_id', $org->id)
                     ->whereNotNull('members.email')
+                    ->where('members.email', '!=', '')
                     ->select('members.*')
                     ->get();
                     
@@ -130,6 +131,7 @@ class NotificationController extends Controller
                         ->where('orgs_members.org_id', $org->id)
                         ->whereIn('members.rut', $rutsList)
                         ->whereNotNull('members.email')
+                        ->where('members.email', '!=', '')
                         ->select('members.*')
                         ->distinct()
                         ->get();
@@ -161,6 +163,12 @@ class NotificationController extends Controller
 
             foreach ($members as $member) {
                 Log::info('Iniciando envío de notificaciones lista members', ['member_email' => $member->email]);
+                
+                // Validación extra: verificar que el email no esté vacío
+                if (empty($member->email) || trim($member->email) === '') {
+                    Log::warning('⚠️ Saltando member con email vacío', ['member_id' => $member->id]);
+                    continue;
+                }
                 
                 try {
                     // Verificar configuración SMTP antes de enviar
