@@ -113,22 +113,33 @@ class NotificationController extends Controller
 
                 $sectorIds = $request->input('sectors', []);
 
-                // Obtener members que tienen services en los sectores seleccionados - SIMPLIFICADO
-                $members = Member::join('orgs_members', 'members.id', '=', 'orgs_members.member_id')
-                    ->join('services', 'members.rut', '=', 'services.rut')
-                    ->where('orgs_members.org_id', $org->id)
-                    ->whereIn('services.location_id', $sectorIds)
-                    ->whereNotNull('members.email')
-                    ->select('members.*')
-                    ->distinct()
+                // APPROACH ALTERNATIVO: usar relaciones Eloquent en lugar de JOINs complejos
+                $members = collect();
+                
+                // Primero obtener todos los services de los sectores seleccionados
+                $services = Service::whereIn('location_id', $sectorIds)
+                    ->where('org_id', $org->id)
                     ->get();
-
+                
+                // Luego obtener los RUTs únicos de esos services
+                $rutsList = $services->pluck('rut')->unique()->filter();
+                
+                // Finalmente obtener los members que tengan esos RUTs y pertenezcan a la org
+                if ($rutsList->count() > 0) {
+                    $members = Member::join('orgs_members', 'members.id', '=', 'orgs_members.member_id')
+                        ->where('orgs_members.org_id', $org->id)
+                        ->whereIn('members.rut', $rutsList)
+                        ->whereNotNull('members.email')
+                        ->select('members.*')
+                        ->distinct()
+                        ->get();
+                }
+                
                 Log::info('Enviando a sectores específicos:', [
-
                     'sectors' => $sectorIds,
-
+                    'services_found' => $services->count(),
+                    'ruts_found' => $rutsList->count(),
                     'memberCount' => $members->count()
-
                 ]);
 
             }
