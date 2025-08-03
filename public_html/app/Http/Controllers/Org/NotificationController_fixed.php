@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\Member;
 use App\Models\Service;
 use App\Models\Org;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Redirect;
 
 class NotificationController extends Controller
@@ -22,7 +23,22 @@ class NotificationController extends Controller
     {
         $org = Org::findOrFail($id);
         $activeLocations = Location::where('org_id', $org->id)->get();
-        return View::make('orgs.notifications.index', compact('org', 'activeLocations'));
+        
+        // Obtener notificaciones recientes de la organización
+        $notifications = Notification::where('org_id', $org->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+        
+        // Calcular estadísticas
+        $stats = [
+            'total' => Notification::where('org_id', $org->id)->count(),
+            'enviadas' => Notification::where('org_id', $org->id)->where('email_status', 'sent')->count(),
+            'pendientes' => Notification::where('org_id', $org->id)->where('email_status', 'pending')->count(),
+            'fallidas' => Notification::where('org_id', $org->id)->where('email_status', 'failed')->count(),
+        ];
+        
+        return View::make('orgs.notifications.index', compact('org', 'activeLocations', 'notifications', 'stats'));
     }
 
     public function store(Request $request, $id)
@@ -109,6 +125,19 @@ class NotificationController extends Controller
                     Mail::to($user->email)->send(new NotificationMail($title, $message, $org, $user));
                     Log::info('Correo enviado exitosamente a: ' . $user->email);
                     $sentCount++;
+                    
+                    // Guardar notificación exitosa
+                    Notification::create([
+                        'org_id' => $org->id,
+                        'title' => $title,
+                        'message' => $message,
+                        'recipient_email' => $user->email,
+                        'recipient_name' => $user->name,
+                        'send_method' => 'email',
+                        'email_status' => 'sent',
+                        'email_sent_at' => now(),
+                    ]);
+                    
                 } catch (\Exception $e) {
                     Log::error('Error enviando correo a ' . $user->email, [
                         'error' => $e->getMessage(),
@@ -116,6 +145,18 @@ class NotificationController extends Controller
                         'line' => $e->getLine()
                     ]);
                     $errorCount++;
+                    
+                    // Guardar notificación fallida
+                    Notification::create([
+                        'org_id' => $org->id,
+                        'title' => $title,
+                        'message' => $message,
+                        'recipient_email' => $user->email,
+                        'recipient_name' => $user->name,
+                        'send_method' => 'email',
+                        'email_status' => 'failed',
+                        'email_error' => $e->getMessage(),
+                    ]);
                 }
             }
 

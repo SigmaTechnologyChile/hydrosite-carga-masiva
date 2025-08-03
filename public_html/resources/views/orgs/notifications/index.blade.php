@@ -7,7 +7,21 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{route('orgs.index')}}">Organizaciones</a></li>
-                <li class="breadcrumb-item"><a href="{{route('orgs.dashboard',$org->id)}}">{{$org->name}}</a></li>
+            // Configuración de tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Función para mostrar detalles de notificación
+        function showNotificationDetails(notificationId) {
+            // Aquí puedes implementar la lógica para mostrar detalles
+            // Por ejemplo, usando un modal o redirigiendo a una página de detalles
+            console.log('Mostrando detalles de notificación ID:', notificationId);
+        }
+    </script>
+@endpush        <li class="breadcrumb-item"><a href="{{route('orgs.dashboard',$org->id)}}">{{$org->name}}</a></li>
                 <li class="breadcrumb-item active">Notificaciones</li>
             </ol>
         </nav>
@@ -22,7 +36,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title mb-0 text-white">Total</h6>
-                                <h3 class="mb-0">124</h3>
+                                <h3 class="mb-0">{{ $stats['total'] ?? 0 }}</h3>
                             </div>
                             <i class="bi bi-bell fs-1 opacity-50"></i>
                         </div>
@@ -35,7 +49,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title mb-0 text-white">Enviadas</h6>
-                                <h3 class="mb-0">98</h3>
+                                <h3 class="mb-0">{{ $stats['enviadas'] ?? 0 }}</h3>
                             </div>
                             <i class="bi bi-check-circle fs-1 opacity-50"></i>
                         </div>
@@ -48,7 +62,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title mb-0 text-white">Pendientes</h6>
-                                <h3 class="mb-0">18</h3>
+                                <h3 class="mb-0">{{ $stats['pendientes'] ?? 0 }}</h3>
                             </div>
                             <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
                         </div>
@@ -61,7 +75,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title mb-0 text-white">Fallidas</h6>
-                                <h3 class="mb-0">8</h3>
+                                <h3 class="mb-0">{{ $stats['fallidas'] ?? 0 }}</h3>
                             </div>
                             <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
                         </div>
@@ -231,62 +245,68 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($notifications as $index => $notification)
                             <tr>
-                                <td>1</td>
-                                <td>Actualización del sistema</td>
-                                <td>El sistema se actualizará esta noche a las 22:00.</td>
-                                <td>
-                                    <span class="badge bg-primary">Sector: Administración</span>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $notification->title }}</td>
+                                <td title="{{ $notification->message }}">
+                                    {{ Str::limit($notification->message, 50) }}
                                 </td>
                                 <td>
-                                    <span class="badge rounded-pill bg-info text-white">
-                                        <i class="bi bi-envelope me-1"></i>Email
-                                    </span>
+                                    <span class="badge bg-primary">{{ $notification->recipient_name }}</span>
+                                    <br><small class="text-muted">{{ $notification->recipient_email }}</small>
                                 </td>
-                                <td><span class="badge bg-success">Enviado</span></td>
-                                <td>08/04/2025 12:34</td>
+                                <td>
+                                    @if($notification->send_method == 'email')
+                                        <span class="badge rounded-pill bg-info text-white">
+                                            <i class="bi bi-envelope me-1"></i>Email
+                                        </span>
+                                    @elseif($notification->send_method == 'app')
+                                        <span class="badge rounded-pill bg-light text-dark border">
+                                            <i class="bi bi-app me-1"></i>App
+                                        </span>
+                                    @elseif($notification->send_method == 'sms')
+                                        <span class="badge rounded-pill bg-warning text-dark">
+                                            <i class="bi bi-chat-text me-1"></i>SMS
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($notification->email_status == 'sent')
+                                        <span class="badge bg-success">Enviado</span>
+                                    @elseif($notification->email_status == 'failed')
+                                        <span class="badge bg-danger">Fallido</span>
+                                    @elseif($notification->email_status == 'pending')
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    @else
+                                        <span class="badge bg-secondary">Desconocido</span>
+                                    @endif
+                                </td>
+                                <td>{{ $notification->created_at->format('d/m/Y H:i') }}</td>
                                 <td class="text-end">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Acciones
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver detalles</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil"></i> Editar</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-repeat"></i> Reenviar</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash"></i> Eliminar</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="showNotificationDetails({{ $notification->id }})"><i class="bi bi-eye"></i> Ver detalles</a></li>
+                                            @if($notification->email_status == 'failed')
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-repeat"></i> Reenviar</a></li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>2</td>
-                                <td>Mantenimiento programado</td>
-                                <td>Habrá una pausa por mantenimiento el viernes.</td>
-                                <td>
-                                    <span class="badge bg-info">Todos los sectores</span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill bg-light text-dark border"><i class="bi bi-app me-1"></i>App</span>
-                                </td>
-                                <td><span class="badge bg-success">Enviado</span></td>
-                                <td>06/04/2025 09:15</td>
-                                <td class="text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            Acciones
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver detalles</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil"></i> Editar</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-repeat"></i> Reenviar</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash"></i> Eliminar</a></li>
-                                        </ul>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                        No hay notificaciones registradas
                                     </div>
                                 </td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
