@@ -209,6 +209,33 @@ Route::prefix('org')->name('orgs.')->group(function () {
         return view('orgs.contable.giros-depositos', ['orgId' => $id]);
     })->name('giros-depositos.index');
 
+    // Ruta temporal para probar flujo de datos de bancos
+    Route::get('{id}/test-bancos', function($id) {
+        $bancos = \App\Models\Banco::orderBy('nombre')->get();
+        return view('orgs.test-bancos', ['orgId' => $id, 'bancos' => $bancos]);
+    })->name('test.bancos');
+
+    // Ruta para probar formulario completo de bancos
+    Route::get('{id}/test-banco-formulario', function($id) {
+        $bancos = \App\Models\Banco::orderBy('nombre')->get();
+        return view('orgs.test-banco-formulario', ['orgId' => $id, 'bancos' => $bancos]);
+    })->name('test.banco.formulario');
+
+    // Rutas para movimientos (ingresos y egresos)
+    Route::post('{id}/ingresos', [App\Http\Controllers\MovimientoController::class, 'storeIngreso'])->name('movimientos.ingresos.store');
+    Route::post('{id}/egresos', [App\Http\Controllers\MovimientoController::class, 'storeEgreso'])->name('movimientos.egresos.store');
+
+    // Ruta para probar movimientos (ingresos y egresos)
+    Route::get('{id}/test-movimientos', function($id) {
+        $categoriasIngresos = \App\Models\Categoria::where('tipo', 'ingreso')->orderBy('subcategoria')->get();
+        $categoriasEgresos = \App\Models\Categoria::where('tipo', 'egreso')->orderBy('subcategoria')->get();
+        return view('orgs.test-movimientos', [
+            'orgId' => $id, 
+            'categoriasIngresos' => $categoriasIngresos,
+            'categoriasEgresos' => $categoriasEgresos
+        ]);
+    })->name('test.movimientos');
+
 
 
     Route::get('{id}/cuenta/crear-usuario', [App\Http\Controllers\AccountController::class, 'redirectCrearUsuario'])->name('accounts.crearUsuario');

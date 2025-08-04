@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\SimpleFacturaController;
+// use App\Http\Controllers\SimpleFacturaController; // COMENTADO - SimpleFactura deshabilitado
 use Illuminate\Http\Request;
 use App\Models\Org;
 use App\Models\Folio;
 use App\Models\Document;
+
 class FolioController extends Controller
 {
     
@@ -31,8 +32,17 @@ class FolioController extends Controller
 	    
 	    try {
 	        
-	        $token = (new SimpleFacturaController)->token($org_id);
+	        // COMENTADO - SimpleFactura deshabilitado temporalmente
+	        // $token = (new SimpleFacturaController)->token($org_id);
 	        
+	        // Retornar mensaje informativo en lugar de procesar
+	        return redirect()->back()->with('error', 'La funcionalidad de folios está temporalmente deshabilitada. SimpleFactura en mantenimiento.');
+	        
+	        // Retornar mensaje informativo en lugar de procesar
+	        return redirect()->back()->with('error', 'La funcionalidad de folios está temporalmente deshabilitada. SimpleFactura en mantenimiento.');
+	        
+	        /*
+	        // CÓDIGO ORIGINAL COMENTADO - SimpleFactura
 	        if($token){
                 $data='{
                           "credenciales": {
@@ -45,8 +55,10 @@ class FolioController extends Controller
                 $endpoint="folios/solicitar";
                 $method="POST";
     
-                $response = (new SimpleFacturaController)->get_ws($data,$token,$method,"sandbox",$endpoint);
+                // $response = (new SimpleFacturaController)->get_ws($data,$token,$method,"sandbox",$endpoint);
                 
+                /*
+                // CÓDIGO ORIGINAL COMENTADO
                 $desde = $response->data->desde;
                 $hasta = $response->data->hasta;
                 
@@ -77,6 +89,7 @@ class FolioController extends Controller
 	        }else{
 	            return null;
 	        }
+	        */
         } catch (\Exception $e) {
             return response()->json(['message'=>'payment not found!'.$e], 404);
         }

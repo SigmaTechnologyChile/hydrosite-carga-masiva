@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Org;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\SimpleFacturaController;
+// use App\Http\Controllers\SimpleFacturaController; // COMENTADO - SimpleFactura deshabilitado
 use Illuminate\Http\Request;
 use App\Models\Org;
 use App\Models\Folio;
@@ -56,6 +56,12 @@ class FolioController extends Controller
 
     function store($org_id,Request $request)
     {
+        // COMENTADO - SimpleFactura deshabilitado temporalmente
+        // Retornar mensaje informativo
+        return redirect()->back()->with('error', 'La funcionalidad de folios está temporalmente deshabilitada. SimpleFactura en mantenimiento.');
+        
+        /*
+        // CÓDIGO ORIGINAL COMENTADO
         //$org_id = $request->input('org_id');
         $qxt = $request->input('qxt');
         $typedte = $request->input('typeDte');
@@ -113,6 +119,7 @@ class FolioController extends Controller
 
             return redirect()->route('orgs.folios.index',$org_id)->with('danger', 'not found!'.$e);
         }
+        */
     }
     public function export()
     {

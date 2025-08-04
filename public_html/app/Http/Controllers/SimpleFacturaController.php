@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Token;
 use App\Models\Org;
 
+// CONTROLADOR COMENTADO - SimpleFactura integración deshabilitada temporalmente
+/*
 class SimpleFacturaController extends Controller
 {
     function token($org_id){
@@ -47,6 +49,7 @@ class SimpleFacturaController extends Controller
                 if (isset($error_msg)) {
                     //dd($error_msg);
                 }
+                
                 $rest = json_decode($response);
                 
                 $token = new Token();
@@ -97,3 +100,7 @@ class SimpleFacturaController extends Controller
         return json_decode($response);
     }
 }
+*/
+
+// NOTA: SimpleFactura ha sido deshabilitado temporalmente
+// Para reactivar, descomentar la clase completa y verificar las credenciales de API

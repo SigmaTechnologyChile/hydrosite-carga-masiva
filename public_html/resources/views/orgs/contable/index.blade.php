@@ -4,6 +4,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Gestión Contable</title>
 </head>
 <style>
   .notification {
@@ -27,6 +31,59 @@
   }
   .notification.success { background: #28a745; color: #fff; }
   .notification.error { background: #dc3545; color: #fff; }
+  
+  /* Debug - Eliminar restricciones de botones en modal */
+  .modal button, .modal .btn {
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Debug - Asegurar funcionalidad en modal de configuración */
+  #modalConfiguracionCuentas button,
+  #modalConfiguracionCuentas .btn,
+  #saveCajaGeneralBtn,
+  #editCajaGeneralBtn,
+  #saveCuentaCorrienteBtn,
+  #editCuentaCorrienteBtn,
+  #saveCuentaAhorroBtn,
+  #editCuentaAhorroBtn {
+    pointer-events: auto !important;
+    z-index: 1001 !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+  }
+  
+  /* Debug - Remover bloqueos de campos en modal */
+  #modalConfiguracionCuentas input,
+  #modalConfiguracionCuentas select {
+    pointer-events: auto !important;
+    cursor: text !important;
+    background-color: #fff !important;
+    color: #212529 !important;
+  }
+  
+  /* Debug - Forzar funcionalidad de botones principales */
+  #ingresosBtn, #egresosBtn, #balanceBtn, #conciliacionBtn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Debug - Eliminar cualquier overlay bloqueador */
+  #ingresosBtn *, #egresosBtn *, #balanceBtn *, #conciliacionBtn * {
+    pointer-events: auto !important;
+  }
+  
+  /* Debug - Asegurar que x-boton-protegido funcione */
+  x-boton-protegido, .boton-protegido {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+  }
 </style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -62,6 +119,14 @@
       margin-bottom: 20px;
       display: flex;
       align-items: center;
+    }
+    
+    /* Asegurar que los botones principales sean clickeables */
+    .btn-wrapper button,
+    .btn-wrapper .btn {
+      pointer-events: auto !important;
+      z-index: 1000 !important;
+      position: relative !important;
     }
     
     .warning-box i {
@@ -103,6 +168,250 @@
     
     .required {
       color: #e53935;
+    }
+
+    /* Nuevos estilos para funcionalidades avanzadas */
+    .modal-header-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .section-header-with-button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .add-account-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+    }
+
+    .add-account-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .account-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #fafafa;
+      position: relative;
+    }
+
+    .account-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .account-header h4 {
+      margin: 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .remove-account-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .remove-account-btn:hover {
+      background-color: #c82333;
+    }
+
+    .action-btn {
+      background-color: #17a2b8;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .action-btn:hover {
+      background-color: #138496;
+    }
+
+    .secondary-btn {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .secondary-btn:hover {
+      background-color: #5a6268;
+    }
+
+    .left-buttons, .right-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .account-item.removing {
+      animation: slideOut 0.3s ease-out forwards;
+    }
+
+    @keyframes slideOut {
+      to {
+        opacity: 0;
+        transform: translateX(-100%);
+        height: 0;
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    .account-item.adding {
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Estilos para botones específicos de cuentas */
+    .account-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-edit-account, .btn-save-account {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-edit-account {
+      background-color: #ffc107;
+      color: #212529;
+    }
+
+    .btn-edit-account:hover {
+      background-color: #e0a800;
+    }
+
+    .btn-save-account {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-save-account:hover {
+      background-color: #218838;
+    }
+
+    .btn-save-account:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+
+    .account-status {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 4px;
+      color: #155724;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .account-item.saved {
+      border-color: #28a745;
+      background-color: #f8fff9;
+    }
+
+    .account-item.editing {
+      border-color: #ffc107;
+      background-color: #fffdf5;
+    }
+
+    /* Estilos para estado bloqueado/guardado */
+    .account-item.locked {
+      background-color: #f8f9fa !important;
+      border-color: #6c757d !important;
+      opacity: 0.8;
+      position: relative;
+    }
+
+    /* Clase locked removida - sin bloqueos */
+    .account-item.locked {
+      /* Sin restricciones - funcionalidad completa */
+    }
+
+    .account-item.locked .form-grid input,
+    .account-item.locked .form-grid select {
+      /* Campos funcionales sin bloqueo */
+      background-color: #fff;
+      color: #212529;
+      cursor: text;
+    }
+
+    .account-item.locked .account-header h4 {
+      color: #6c757d;
+    }
+
+    .account-item.locked .account-status {
+      background-color: #e2e3e5;
+      border-color: #babfc7;
+      color: #495057;
+    }
+
+    /* Estilos para hacer los botones del modal más pequeños */
+    .button-group .secondary-btn,
+    .button-group .submit-btn {
+      padding: 6px 12px !important;
+      font-size: 13px !important;
+      min-height: auto !important;
+    }
+
+    .button-group .secondary-btn i,
+    .button-group .submit-btn i {
+      font-size: 12px;
     }
   </style>
 </head>
@@ -177,7 +486,7 @@
             <select id="categoria-ingresos" name="categoria" required style="width: 100%;">
               <option value="">-- Selecciona una categoría --</option>
               <option value="venta_agua">Venta de Agua (Total Consumo)</option>
-              <option value="cuotas_incorporacion">Cuotas de Incorporación Cuotas de Incorporación)</option>
+              <option value="cuotas_incorporacion">Cuotas de Incorporación (Cuotas de Incorporación)</option>
               <option value="venta_medidores">Venta de Medidores (Otros Ingresos)</option>
               <option value="trabajos_domicilio">Trabajos en Domicilio (Otros Ingresos)</option>
               <option value="subsidios">Subsidios (Otros Ingresos)</option>
@@ -237,15 +546,15 @@
             <label for="categoria-egresos">Categoría de Egreso</label>
             <select id="categoria-egresos" name="categoria" required style="width: 100%;">
               <option value="">-- Selecciona una categoría --</option>
-              <option value="energia_electrica">Energía Eléctrica ->(Gastos de Operación)</option>
-              <option value="sueldos">Sueldos y Leyes Sociales ->(Gastos de Operación)</option>
-              <option value="otras_cuentas">Otras Ctas. (Agua, Int. Cel.) ->(Gastos de Operación)</option>
-              <option value="mantencion">Mantención y reparaciones Instalaciones ->(Gastos de Mantención)</option>
-              <option value="insumos_oficina">Insumos y Materiales (Oficina) ->(Gastos de Administración)</option>
-              <option value="materiales_red">Materiales e Insumos (Red) ->(Gastos de Mejoramiento)</option>
-              <option value="viaticos">Viáticos / Seguros / Movilización ->(Otros Gastos)</option>
-              <option value="trabajos_domicilio">Gastos por Trabajos en domicilio ->(Gastos de Mantención)</option>
-              <option value="mejoramiento">Mejoramiento / Inversiones ->(Gastos de Mejoramiento)</option>
+              <option value="energia_electrica">Energía Eléctrica -> (Gastos de Operación)</option>
+              <option value="sueldos">Sueldos y Leyes Sociales -> (Gastos de Operación)</option>
+              <option value="otras_cuentas">Otras Ctas. (Agua, Int. Cel.) -> (Gastos de Operación)</option>
+              <option value="mantencion">Mantención y reparaciones Instalaciones -> (Gastos de Mantención)</option>
+              <option value="insumos_oficina">Insumos y Materiales (Oficina) -> (Gastos de Administración)</option>
+              <option value="materiales_red">Materiales e Insumos (Red) -> (Gastos de Mejoramiento)</option>
+              <option value="viaticos">Viáticos / Seguros / Movilización -> (Otros Gastos)</option>
+              <option value="trabajos_domicilio">Gastos por Trabajos en domicilio -> (Gastos de Mantención)</option>
+              <option value="mejoramiento">Mejoramiento / Inversiones -> (Gastos de Mejoramiento)</option>
             </select>
 
             <label for="cuenta-origen">Cuenta Origen</label>
@@ -253,7 +562,6 @@
               <option value="">-- Selecciona una cuenta --</option>
               <option value="caja_general">Caja General</option>
               <option value="cuenta_corriente_1">Cuenta Corriente 1</option>
-              <option value="cuenta_corriente_2">Cuenta Corriente 2</option>
               <!-- Agregar Cuenta de Ahorro -->
               <option value="cuenta_ahorro">Cuenta de Ahorro</option>
             </select>
@@ -310,7 +618,6 @@
               <label for="cuenta-giro">Cuenta Origen</label>
               <select id="cuenta-giro" name="cuenta" required style="width: 100%;">
                 <option value="cuenta_corriente_1">Cuenta Corriente 1</option>
-                <option value="cuenta_corriente_2">Cuenta Corriente 2</option>
                 <!-- Agregar Cuenta de Ahorro -->
                 <option value="cuenta_ahorro">Cuenta de Ahorro</option>
               </select>
@@ -351,7 +658,6 @@
               <label for="cuenta-deposito">Cuenta Destino</label>
               <select id="cuenta-deposito" name="cuenta" required style="width: 100%;">
                 <option value="cuenta_corriente_1">Cuenta Corriente 1</option>
-                <option value="cuenta_corriente_2">Cuenta Corriente 2</option>
                 <!-- Agregar Cuenta de Ahorro -->
                 <option value="cuenta_ahorro">Cuenta de Ahorro</option>
               </select>
@@ -383,164 +689,184 @@
     </div>
   </div>
 
-  <!-- Modal Cuentas Iniciales -->
+  <!-- Modal Cuentas Iniciales Mejorado -->
   <div id="cuentasInicialesModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header">
         <h2><i class="bi bi-journal-plus"></i> Configuración de Cuentas Iniciales</h2>
-        <button class="modal-close" id="closeCuentasInicialesModal">Cerrar</button>
+        <div class="modal-header-buttons">
+          <button type="button" class="action-btn edit-btn" id="editConfigBtn" style="display: none;">
+            <i class="bi bi-pencil-square"></i> Editar
+          </button>
+          <button class="modal-close" id="closeCuentasInicialesModal">Cerrar</button>
+        </div>
       </div>
       
       <form id="cuentasInicialesForm">
         <div class="warning-box">
           <i class="bi bi-exclamation-triangle"></i>
-          <p>¿Está seguro(a) de guardar los cambios? Esta operación solo se podrá realizar una sola vez.</p>
+          <p id="warningText">¿Está seguro(a) de guardar los cambios? Esta operación solo se podrá realizar una sola vez.</p>
         </div>
         
         <div class="form-section">
-          <h3>Saldo Inicial de Cuentas</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="saldo-caja-general">Saldo Caja General</label>
-              <input type="number" id="saldo-caja-general" name="saldo_caja_general" step="0.01" min="0" required>
+          <div class="section-header-with-button">
+            <h3>Configuración de Cuentas</h3>
+          </div>
+          
+          <!-- Contenedor de cuentas dinámicas -->
+          <div id="accountsContainer">
+            <!-- Caja General -->
+            <div class="account-item" data-account-type="caja_general">
+              <div class="account-header">
+                <h4><i class="bi bi-cash-stack"></i> Caja General</h4>
+                <div class="account-actions">
+                  <button type="button" class="btn-edit-account" id="editCajaGeneralBtn">
+                    <i class="bi bi-pencil-square"></i> Editar
+                  </button>
+                  <button type="button" class="btn-save-account" id="saveCajaGeneralBtn">
+                    <i class="bi bi-save"></i> Guardar
+                  </button>
+                  <button type="button" class="remove-account-btn" data-account="caja_general" style="display: none;">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="saldo-caja-general">Saldo Inicial</label>
+                  <input type="number" id="saldo-caja-general" name="saldo_caja_general" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label for="banco-caja-general">Banco</label>
+                  <select id="banco-caja-general" name="banco_caja_general">
+                    <option value="">Sin banco</option>
+                    @foreach($bancos as $banco)
+                      <option value="{{ $banco->id }}">{{ $banco->nombre }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="numero-caja-general">Número de Cuenta</label>
+                  <input type="text" id="numero-caja-general" name="numero_caja_general" placeholder="Ej: 12345678-9">
+                </div>
+              </div>
+              <div class="account-status" id="cajaGeneralStatus" style="display: none;">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span>Caja General configurada correctamente</span>
+              </div>
             </div>
-            
-            <div class="form-group">
-              <label for="banco-caja-general">Banco</label>
-              <select id="banco-caja-general" name="banco_caja_general">
-                <option value="">Sin banco</option>
-                <option value="banco_estado">Banco Estado</option>
-                <option value="banco_chile">Banco de Chile</option>
-                <option value="banco_bci">BCI</option>
-                <option value="banco_santander">Santander</option>
-                <option value="banco_itau">Itaú</option>
-                <option value="banco_scotiabank">Scotiabank</option>
-                <option value="banco_bice">BICE</option>
-                <option value="banco_security">Security</option>
-                <option value="banco_falabella">Falabella</option>
-                <option value="banco_ripley">Ripley</option>
-                <option value="banco_consorcio">Consorcio</option>
-                <option value="otro">Otro</option>
-              </select>
+
+            <!-- Cuenta Corriente 1 -->
+            <div class="account-item" data-account-type="cuenta_corriente_1">
+              <div class="account-header">
+                <h4 id="cuentaCorrienteTitle"><i class="bi bi-credit-card-2-front"></i> Cuenta Corriente</h4>
+                <div class="account-actions">
+                  <button type="button" class="btn-edit-account" id="editCuentaCorrienteBtn">
+                    <i class="bi bi-pencil-square"></i> Editar
+                  </button>
+                  <button type="button" class="btn-save-account" id="saveCuentaCorrienteBtn">
+                    <i class="bi bi-save"></i> Guardar
+                  </button>
+                  <button type="button" class="add-account-btn" id="addCuentaCorrienteBtn">
+                    <i class="bi bi-plus-circle"></i> Agregar Cuenta
+                  </button>
+                  <button type="button" class="remove-account-btn" data-account="cuenta_corriente_1">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="saldo-cta-corriente-1">Saldo Inicial</label>
+                  <input type="number" id="saldo-cta-corriente-1" name="saldo_cta_corriente_1" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label for="banco-cta-corriente-1">Banco</label>
+                  <select id="banco-cta-corriente-1" name="banco_cta_corriente_1">
+                    <option value="">Sin banco</option>
+                    @foreach($bancos as $banco)
+                      <option value="{{ $banco->id }}">{{ $banco->nombre }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="numero-cta-corriente-1">Número de Cuenta</label>
+                  <input type="text" id="numero-cta-corriente-1" name="numero_cta_corriente_1" placeholder="Ej: 12345678-9">
+                </div>
+              </div>
+              <div class="account-status" id="cuentaCorrienteStatus" style="display: none;">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span>Cuenta Corriente configurada correctamente</span>
+              </div>
             </div>
-            
-            <div class="form-group">
-              <label for="numero-caja-general">Número de Cuenta</label>
-              <input type="text" id="numero-caja-general" name="numero_caja_general">
+
+            <!-- Cuenta de Ahorro -->
+            <div class="account-item" data-account-type="cuenta_ahorro">
+              <div class="account-header">
+                <h4 id="cuentaAhorroTitle"><i class="bi bi-piggy-bank"></i> Cuenta de Ahorro</h4>
+                <div class="account-actions">
+                  <button type="button" class="btn-edit-account" id="editCuentaAhorroBtn">
+                    <i class="bi bi-pencil-square"></i> Editar
+                  </button>
+                  <button type="button" class="btn-save-account" id="saveCuentaAhorroBtn">
+                    <i class="bi bi-save"></i> Guardar
+                  </button>
+                  <button type="button" class="add-account-btn" id="addCuentaAhorroBtn">
+                    <i class="bi bi-plus-circle"></i> Agregar Cuenta
+                  </button>
+                  <button type="button" class="remove-account-btn" data-account="cuenta_ahorro">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="saldo-cuenta-ahorro">Saldo Inicial</label>
+                  <input type="number" id="saldo-cuenta-ahorro" name="saldo_cuenta_ahorro" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label for="banco-cuenta-ahorro">Banco</label>
+                  <select id="banco-cuenta-ahorro" name="banco_cuenta_ahorro">
+                    <option value="">Sin banco</option>
+                    @foreach($bancos as $banco)
+                      <option value="{{ $banco->id }}">{{ $banco->nombre }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="numero-cuenta-ahorro">Número de Cuenta</label>
+                  <input type="text" id="numero-cuenta-ahorro" name="numero_cuenta_ahorro" placeholder="Ej: 12345678-9">
+                </div>
+              </div>
+              <div class="account-status" id="cuentaAhorroStatus" style="display: none;">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span>Cuenta de Ahorro configurada correctamente</span>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="form-section">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="saldo-cta-corriente-1">Saldo Cuenta Corriente 1</label>
-              <input type="number" id="saldo-cta-corriente-1" name="saldo_cta_corriente_1" step="0.01" min="0" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="banco-cta-corriente-1">Banco</label>
-              <select id="banco-cta-corriente-1" name="banco_cta_corriente_1">
-                <option value="">Sin banco</option>
-                <option value="banco_estado">Banco Estado</option>
-                <option value="banco_chile">Banco de Chile</option>
-                <option value="banco_bci">BCI</option>
-                <option value="banco_santander">Santander</option>
-                <option value="banco_itau">Itaú</option>
-                <option value="banco_scotiabank">Scotiabank</option>
-                <option value="banco_bice">BICE</option>
-                <option value="banco_security">Security</option>
-                <option value="banco_falabella">Falabella</option>
-                <option value="banco_ripley">Ripley</option>
-                <option value="banco_consorcio">Consorcio</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="numero-cta-corriente-1">Número de Cuenta</label>
-              <input type="text" id="numero-cta-corriente-1" name="numero_cta_corriente_1">
-            </div>
+        <div class="button-group" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
+          <div class="left-buttons">
+            <button type="button" class="secondary-btn" id="previewBtn">
+              <i class="bi bi-eye"></i> Vista Previa
+            </button>
+          </div>
+          <div class="right-buttons">
+            <button type="button" class="secondary-btn" id="resetFormBtn">
+              <i class="bi bi-arrow-clockwise"></i> Resetear
+            </button>
+            <button type="submit" class="submit-btn">
+              <i class="bi bi-save"></i> Guardar Cuentas Iniciales
+            </button>
           </div>
         </div>
         
-        <div class="form-section">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="saldo-cta-corriente-2">Saldo Cuenta Corriente 2</label>
-              <input type="number" id="saldo-cta-corriente-2" name="saldo_cta_corriente_2" step="0.01" min="0" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="banco-cta-corriente-2">Banco</label>
-              <select id="banco-cta-corriente-2" name="banco_cta_corriente_2">
-                <option value="">Sin banco</option>
-                <option value="banco_estado">Banco Estado</option>
-                <option value="banco_chile">Banco de Chile</option>
-                <option value="banco_bci">BCI</option>
-                <option value="banco_santander">Santander</option>
-                <option value="banco_itau">Itaú</option>
-                <option value="banco_scotiabank">Scotiabank</option>
-                <option value="banco_bice">BICE</option>
-                <option value="banco_security">Security</option>
-                <option value="banco_falabella">Falabella</option>
-                <option value="banco_ripley">Ripley</option>
-                <option value="banco_consorcio">Consorcio</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="numero-cta-corriente-2">Número de Cuenta</label>
-              <input type="text" id="numero-cta-corriente-2" name="numero_cta_corriente_2">
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-section">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="saldo-cuenta-ahorro">Saldo Cuenta de Ahorro</label>
-              <input type="number" id="saldo-cuenta-ahorro" name="saldo_cuenta_ahorro" step="0.01" min="0" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="banco-cuenta-ahorro">Banco</label>
-              <select id="banco-cuenta-ahorro" name="banco_cuenta_ahorro">
-                <option value="">Sin banco</option>
-                <option value="banco_estado">Banco Estado</option>
-                <option value="banco_chile">Banco de Chile</option>
-                <option value="banco_bci">BCI</option>
-                <option value="banco_santander">Santander</option>
-                <option value="banco_itau">Itaú</option>
-                <option value="banco_scotiabank">Scotiabank</option>
-                <option value="banco_bice">BICE</option>
-                <option value="banco_security">Security</option>
-                <option value="banco_falabella">Falabella</option>
-                <option value="banco_ripley">Ripley</option>
-                <option value="banco_consorcio">Consorcio</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="numero-cuenta-ahorro">Número de Cuenta</label>
-              <input type="text" id="numero-cuenta-ahorro" name="numero_cuenta_ahorro">
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-section">
+        <div class="form-section" style="margin-top: 20px;">
           <div class="form-group">
             <label for="responsable">Nombre Responsable <span class="required">*</span></label>
-            <input type="text" id="responsable" name="responsable" required>
+            <input type="text" id="responsable" name="responsable" required placeholder="Nombre del responsable de la configuración">
           </div>
-        </div>
-        
-        <div class="button-group" style="margin-top: 20px;">
-          <button type="submit" class="submit-btn">
-            <i class="bi bi-save"></i> Guardar Cuentas Iniciales
-          </button>
         </div>
       </form>
     </div>
@@ -1010,7 +1336,654 @@
     localStorage.setItem('accountDetails', JSON.stringify(accountDetails));
   }
 
-  // Función para configurar cuentas iniciales
+  // ===============================
+  // FUNCIONES PARA MODAL MEJORADO DE CUENTAS INICIALES
+  // ===============================
+  
+  let accountCounter = 1;
+  
+  // Función para agregar nueva cuenta dinámicamente
+  function agregarNuevaCuenta() {
+    accountCounter++;
+    const accountsContainer = document.getElementById('accountsContainer');
+    const accountTypes = ['caja_adicional', 'cuenta_corriente', 'cuenta_ahorro', 'cuenta_plazo_fijo', 'cuenta_vista'];
+    const icons = ['bi-cash-coin', 'bi-credit-card', 'bi-piggy-bank', 'bi-calendar-check', 'bi-eye'];
+    
+    const randomType = accountTypes[Math.floor(Math.random() * accountTypes.length)];
+    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+    const accountId = 'cuenta_' + accountCounter + '_' + Date.now();
+    
+    const newAccountHtml = `
+      <div class="account-item adding" data-account-type="${accountId}">
+        <div class="account-header">
+          <h4><i class="bi ${randomIcon}"></i> Nueva Cuenta ${accountCounter}</h4>
+          <button type="button" class="remove-account-btn" data-account="${accountId}">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="saldo-${accountId}">Saldo Inicial</label>
+            <input type="number" id="saldo-${accountId}" name="saldo_${accountId}" step="0.01" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="banco-${accountId}">Banco</label>
+            <select id="banco-${accountId}" name="banco_${accountId}">
+              <option value="">Sin banco</option>
+              @foreach($bancos as $banco)
+                <option value="{{ $banco->id }}">{{ $banco->nombre }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="numero-${accountId}">Número de Cuenta</label>
+            <input type="text" id="numero-${accountId}" name="numero_${accountId}" placeholder="Ej: 12345678-9">
+          </div>
+        </div>
+      </div>
+    `;
+    
+    accountsContainer.insertAdjacentHTML('beforeend', newAccountHtml);
+    
+    // Agregar event listener al nuevo botón de eliminar
+    const newRemoveBtn = document.querySelector(`[data-account="${accountId}"]`);
+    newRemoveBtn.addEventListener('click', function() {
+      eliminarCuenta(accountId);
+    });
+    
+    mostrarNotificacion('✅ Nueva cuenta agregada correctamente', 'success');
+  }
+  
+  // Función para eliminar cuenta
+  function eliminarCuenta(accountId) {
+    const accountItem = document.querySelector(`[data-account-type="${accountId}"]`);
+    if (accountItem) {
+      if (confirm('¿Está seguro de eliminar esta cuenta?')) {
+        accountItem.classList.add('removing');
+        setTimeout(() => {
+          accountItem.remove();
+          mostrarNotificacion('✅ Cuenta eliminada correctamente', 'success');
+        }, 300);
+      }
+    }
+  }
+  
+  // Función para mostrar vista previa
+  function mostrarVistaPrevia() {
+    const accountItems = document.querySelectorAll('.account-item');
+    let preview = 'VISTA PREVIA DE CONFIGURACIÓN\\n\\n';
+    let totalSaldo = 0;
+    
+    accountItems.forEach((item, index) => {
+      const accountType = item.dataset.accountType;
+      const saldoInput = item.querySelector('input[type="number"]');
+      const bancoSelect = item.querySelector('select');
+      const numeroInput = item.querySelector('input[type="text"]');
+      
+      const saldo = parseFloat(saldoInput.value || 0);
+      const bancoText = bancoSelect.options[bancoSelect.selectedIndex].text;
+      const numero = numeroInput.value || 'Sin número';
+      
+      totalSaldo += saldo;
+      
+      preview += `${index + 1}. ${item.querySelector('h4').textContent}\\n`;
+      preview += `   • Saldo: $${saldo.toLocaleString()}\\n`;
+      preview += `   • Banco: ${bancoText}\\n`;
+      preview += `   • Número: ${numero}\\n\\n`;
+    });
+    
+    const responsable = document.getElementById('responsable').value || 'Sin especificar';
+    preview += `Responsable: ${responsable}\\n`;
+    preview += `TOTAL GENERAL: $${totalSaldo.toLocaleString()}`;
+    
+    alert(preview);
+  }
+  
+  // Función para resetear formulario
+  function resetearFormulario() {
+    if (confirm('¿Está seguro de resetear todo el formulario?')) {
+      document.getElementById('cuentasInicialesForm').reset();
+      
+      // Remover cuentas dinámicas (mantener solo las básicas)
+      const accountItems = document.querySelectorAll('.account-item');
+      accountItems.forEach(item => {
+        const accountType = item.dataset.accountType;
+        if (!['caja_general', 'cuenta_corriente_1', 'cuenta_corriente_2', 'cuenta_ahorro'].includes(accountType)) {
+          item.remove();
+        }
+      });
+      
+      accountCounter = 1;
+      mostrarNotificacion('✅ Formulario reseteado correctamente', 'success');
+    }
+  }
+
+  // ===============================
+  // FUNCIONES ESPECÍFICAS PARA CAJA GENERAL
+  // ===============================
+  
+  // Función para guardar configuración de Caja General
+  function guardarCajaGeneral() {
+    console.log('🔍 DEBUG: Función guardarCajaGeneral iniciada');
+    
+    const saldo = document.getElementById('saldo-caja-general').value;
+    const banco = document.getElementById('banco-caja-general').value;
+    const numero = document.getElementById('numero-caja-general').value;
+    const responsable = document.getElementById('responsable').value;
+    
+    console.log('🔍 DEBUG: Valores obtenidos - Saldo:', saldo, 'Banco:', banco, 'Numero:', numero, 'Responsable:', responsable);
+    
+    // Validar campos requeridos
+    if (!saldo || parseFloat(saldo) < 0) {
+      mostrarNotificacion('⚠️ Por favor ingrese un saldo válido para Caja General', 'warning');
+      return;
+    }
+    
+    if (!responsable) {
+      mostrarNotificacion('⚠️ Por favor ingrese el nombre del responsable', 'warning');
+      return;
+    }
+    
+    // Preparar datos para envío
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('orgId', {{ $orgId }});
+    formData.append('saldo_caja_general', saldo);
+    formData.append('banco_caja_general', banco);
+    formData.append('numero_caja_general', numero);
+    formData.append('responsable', responsable);
+    formData.append('tipo_operacion', 'caja_general');
+    
+    // Mostrar indicador de carga
+    mostrarNotificacion('⏳ Guardando configuración de Caja General...', 'info');
+    
+    // Deshabilitar botón mientras se procesa
+    const saveBtn = document.getElementById('saveCajaGeneralBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+    
+    // Enviar al servidor
+    fetch('/configuracion-cuentas-iniciales', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Marcar como guardado exitosamente sin bloqueo
+        const cajaGeneralItem = document.querySelector('[data-account-type="caja_general"]');
+        cajaGeneralItem.classList.add('saved');
+        cajaGeneralItem.classList.remove('editing', 'locked');
+        
+        // Mostrar estado de guardado
+        const statusDiv = document.getElementById('cajaGeneralStatus');
+        statusDiv.style.display = 'flex';
+        statusDiv.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i><span>Caja General guardada exitosamente</span>';
+        
+        // Mantener botones activos (sin restricciones)
+        saveBtn.style.display = 'inline-flex';
+        const editBtn = document.getElementById('editCajaGeneralBtn');
+        editBtn.style.display = 'inline-flex';
+        
+        // Campos permanecen habilitados (sin bloqueo)
+        const campos = ['saldo-caja-general', 'banco-caja-general', 'numero-caja-general'];
+        campos.forEach(campoId => {
+          const campo = document.getElementById(campoId);
+          campo.disabled = false;
+          campo.style.backgroundColor = '';
+          campo.style.color = '';
+          campo.style.cursor = '';
+        });
+        
+        // Actualizar saldos locales
+        saldosCuentas.caja_general = parseFloat(saldo);
+        actualizarSaldosCuentas();
+        
+        mostrarNotificacion('✅ Caja General guardada y bloqueada correctamente!', 'success');
+        
+      } else {
+        mostrarNotificacion('❌ Error al guardar: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar Caja General', 'error');
+    })
+    .finally(() => {
+      // Restaurar botón
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="bi bi-save"></i> Guardar';
+    });
+  }
+  
+  // Función para editar configuración de Caja General (sin restricciones)
+  function editarCajaGeneral() {
+    console.log('🔍 DEBUG: Función editarCajaGeneral iniciada');
+    // Edición directa sin confirmación
+    
+    // Habilitar campos para edición
+    const campos = ['saldo-caja-general', 'banco-caja-general', 'numero-caja-general'];
+    campos.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      campo.disabled = false;
+      campo.style.backgroundColor = '';
+      campo.style.color = '';
+      campo.style.cursor = '';
+    });
+    
+    // Cambiar apariencia visual
+    const cajaGeneralItem = document.querySelector('[data-account-type="caja_general"]');
+    cajaGeneralItem.classList.add('editing');
+    cajaGeneralItem.classList.remove('saved', 'locked');
+    
+    // Mantener ambos botones visibles
+    const editBtn = document.getElementById('editCajaGeneralBtn');
+    const saveBtn = document.getElementById('saveCajaGeneralBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    // Ocultar estado de guardado
+    const statusDiv = document.getElementById('cajaGeneralStatus');
+    statusDiv.style.display = 'none';
+    
+    mostrarNotificacion('✏️ Modo edición activado para Caja General', 'success');
+  }
+
+  // ===============================
+  // FUNCIONES ESPECÍFICAS PARA CUENTA CORRIENTE
+  // ===============================
+  
+  // Función para guardar configuración de Cuenta Corriente
+  function guardarCuentaCorriente() {
+    const saldo = document.getElementById('saldo-cta-corriente-1').value;
+    const banco = document.getElementById('banco-cta-corriente-1').value;
+    const numero = document.getElementById('numero-cta-corriente-1').value;
+    const responsable = document.getElementById('responsable').value;
+    
+    // Validar campos requeridos
+    if (!saldo || parseFloat(saldo) < 0) {
+      mostrarNotificacion('⚠️ Por favor ingrese un saldo válido para Cuenta Corriente', 'warning');
+      return;
+    }
+    
+    if (!numero || numero.trim() === '') {
+      mostrarNotificacion('⚠️ Por favor ingrese el número de cuenta', 'warning');
+      return;
+    }
+    
+    if (!responsable) {
+      mostrarNotificacion('⚠️ Por favor ingrese el nombre del responsable', 'warning');
+      return;
+    }
+    
+    // Preparar datos para envío
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('orgId', {{ $orgId }});
+    formData.append('saldo_cuenta_corriente_1', saldo);
+    formData.append('banco_cuenta_corriente_1', banco);
+    formData.append('numero_cuenta_corriente_1', numero);
+    formData.append('responsable', responsable);
+    formData.append('tipo_operacion', 'cuenta_corriente_1');
+    
+    // Mostrar indicador de carga
+    mostrarNotificacion('⏳ Guardando configuración de Cuenta Corriente...', 'info');
+    
+    // Deshabilitar botón mientras se procesa
+    const saveBtn = document.getElementById('saveCuentaCorrienteBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+    
+    // Enviar al servidor
+    fetch('/configuracion-cuentas-iniciales', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Marcar como guardado exitosamente
+        const cuentaCorrienteItem = document.querySelector('[data-account-type="cuenta_corriente_1"]');
+        cuentaCorrienteItem.classList.add('saved');
+        cuentaCorrienteItem.classList.remove('editing');
+        
+        // Actualizar título con el número de cuenta
+        const titleElement = document.getElementById('cuentaCorrienteTitle');
+        titleElement.innerHTML = `<i class="bi bi-credit-card-2-front"></i> Cuenta Corriente N° ${numero}`;
+        
+        // Mostrar estado de guardado
+        const statusDiv = document.getElementById('cuentaCorrienteStatus');
+        statusDiv.style.display = 'flex';
+        statusDiv.innerHTML = `<i class="bi bi-check-circle-fill text-success"></i><span>Cuenta Corriente N° ${numero} guardada correctamente</span>`;
+        
+        // Mantener botones activos (sin restricciones)
+        saveBtn.style.display = 'inline-flex';
+        const editBtn = document.getElementById('editCuentaCorrienteBtn');
+        editBtn.style.display = 'inline-flex';
+        
+        // Mantener campos habilitados (sin bloqueo)
+        document.getElementById('saldo-cta-corriente-1').disabled = false;
+        document.getElementById('banco-cta-corriente-1').disabled = false;
+        document.getElementById('numero-cta-corriente-1').disabled = false;
+        
+        // Actualizar saldos locales
+        saldosCuentas.cuenta_corriente_1 = parseFloat(saldo);
+        actualizarSaldosCuentas();
+        
+        mostrarNotificacion(`✅ Cuenta Corriente N° ${numero} guardada correctamente!`, 'success');
+        
+      } else {
+        mostrarNotificacion('❌ Error al guardar: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar Cuenta Corriente', 'error');
+    })
+    .finally(() => {
+      // Restaurar botón
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="bi bi-save"></i> Guardar';
+    });
+  }
+  
+  // Función para editar configuración de Cuenta Corriente (sin restricciones)
+  function editarCuentaCorriente() {
+    // Edición directa sin confirmación
+    
+    // Habilitar campos para edición
+    document.getElementById('saldo-cta-corriente-1').disabled = false;
+    document.getElementById('banco-cta-corriente-1').disabled = false;
+    document.getElementById('numero-cta-corriente-1').disabled = false;
+    
+    // Cambiar apariencia visual
+    const cuentaCorrienteItem = document.querySelector('[data-account-type="cuenta_corriente_1"]');
+    cuentaCorrienteItem.classList.add('editing');
+    cuentaCorrienteItem.classList.remove('saved');
+    
+    // Mantener ambos botones visibles
+    const editBtn = document.getElementById('editCuentaCorrienteBtn');
+    const saveBtn = document.getElementById('saveCuentaCorrienteBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    // Ocultar estado de guardado
+    const statusDiv = document.getElementById('cuentaCorrienteStatus');
+    statusDiv.style.display = 'none';
+    
+    // Restaurar título original
+    const titleElement = document.getElementById('cuentaCorrienteTitle');
+    titleElement.innerHTML = '<i class="bi bi-credit-card-2-front"></i> Cuenta Corriente';
+    
+    mostrarNotificacion('✏️ Modo edición activado para Cuenta Corriente', 'success');
+  }
+
+  // ===============================
+  // FUNCIONES ESPECÍFICAS PARA CUENTA DE AHORRO
+  // ===============================
+  
+  // Función para guardar configuración de Cuenta de Ahorro
+  function guardarCuentaAhorro() {
+    const saldo = document.getElementById('saldo-cuenta-ahorro').value;
+    const banco = document.getElementById('banco-cuenta-ahorro').value;
+    const numero = document.getElementById('numero-cuenta-ahorro').value;
+    const responsable = document.getElementById('responsable').value;
+    
+    // Validar campos requeridos
+    if (!saldo || parseFloat(saldo) < 0) {
+      mostrarNotificacion('⚠️ Por favor ingrese un saldo válido para Cuenta de Ahorro', 'warning');
+      return;
+    }
+    
+    if (!numero || numero.trim() === '') {
+      mostrarNotificacion('⚠️ Por favor ingrese el número de cuenta de ahorro', 'warning');
+      return;
+    }
+    
+    if (!responsable) {
+      mostrarNotificacion('⚠️ Por favor ingrese el nombre del responsable', 'warning');
+      return;
+    }
+    
+    // Preparar datos para envío
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('orgId', {{ $orgId }});
+    formData.append('saldo_cuenta_ahorro', saldo);
+    formData.append('banco_cuenta_ahorro', banco);
+    formData.append('numero_cuenta_ahorro', numero);
+    formData.append('responsable', responsable);
+    formData.append('tipo_operacion', 'cuenta_ahorro');
+    
+    // Mostrar indicador de carga
+    mostrarNotificacion('⏳ Guardando configuración de Cuenta de Ahorro...', 'info');
+    
+    // Deshabilitar botón mientras se procesa
+    const saveBtn = document.getElementById('saveCuentaAhorroBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+    
+    // Enviar al servidor
+    fetch('/configuracion-cuentas-iniciales', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Mantener campos habilitados (sin bloqueo)
+        document.getElementById('saldo-cuenta-ahorro').disabled = false;
+        document.getElementById('banco-cuenta-ahorro').disabled = false;
+        document.getElementById('numero-cuenta-ahorro').disabled = false;
+        
+        // Actualizar título con el número de cuenta
+        const titleElement = document.getElementById('cuentaAhorroTitle');
+        titleElement.innerHTML = `<i class="bi bi-piggy-bank"></i> Cuenta de Ahorro N° ${numero}`;
+        
+        // Mostrar estado de guardado
+        const statusDiv = document.getElementById('cuentaAhorroStatus');
+        statusDiv.style.display = 'flex';
+        statusDiv.innerHTML = `<i class="bi bi-check-circle-fill text-success"></i><span>Cuenta de Ahorro N° ${numero} guardada correctamente</span>`;
+        
+        // Mantener ambos botones activos
+        saveBtn.style.display = 'inline-flex';
+        const editBtn = document.getElementById('editCuentaAhorroBtn');
+        editBtn.style.display = 'inline-flex';
+        
+        // Actualizar saldos locales
+        saldosCuentas.cuenta_ahorro = parseFloat(saldo);
+        actualizarSaldosCuentas();
+        
+        mostrarNotificacion(`✅ Cuenta de Ahorro N° ${numero} guardada correctamente!`, 'success');
+        
+      } else {
+        mostrarNotificacion('❌ Error al guardar: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar Cuenta de Ahorro', 'error');
+    })
+    .finally(() => {
+      // Restaurar botón
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="bi bi-save"></i> Guardar';
+    });
+  }
+  
+  // Función para editar configuración de Cuenta de Ahorro (sin restricciones)
+  function editarCuentaAhorro() {
+    // Edición directa sin confirmación
+    
+    // Habilitar campos para edición
+    document.getElementById('saldo-cuenta-ahorro').disabled = false;
+    document.getElementById('banco-cuenta-ahorro').disabled = false;
+    document.getElementById('numero-cuenta-ahorro').disabled = false;
+    
+    // Mantener ambos botones activos
+    const editBtn = document.getElementById('editCuentaAhorroBtn');
+    const saveBtn = document.getElementById('saveCuentaAhorroBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    // Ocultar estado de guardado
+    const statusDiv = document.getElementById('cuentaAhorroStatus');
+    statusDiv.style.display = 'none';
+    
+    mostrarNotificacion('✏️ Modo edición activado para Cuenta de Ahorro', 'success');
+  }
+
+  // ===============================
+  // FUNCIONES SIMPLES PARA GUARDAR Y EDITAR CADA SECCIÓN
+  // ===============================
+
+  // Función para guardar configuración de Caja General
+  function guardarCajaGeneral() {
+    const saldo = document.getElementById('saldo-caja-general').value;
+    const banco = document.getElementById('banco-caja-general').value;
+    const numero = document.getElementById('numero-caja-general').value;
+    
+    if (!saldo || parseFloat(saldo) < 0) {
+      mostrarNotificacion('❌ Debe ingresar un saldo válido para Caja General', 'error');
+      return;
+    }
+    
+    // Mantener campos habilitados (sin bloqueo)
+    document.getElementById('saldo-caja-general').disabled = false;
+    document.getElementById('banco-caja-general').disabled = false;
+    document.getElementById('numero-caja-general').disabled = false;
+    
+    // Mantener ambos botones activos
+    const editBtn = document.getElementById('editCajaGeneralBtn');
+    const saveBtn = document.getElementById('saveCajaGeneralBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    mostrarNotificacion('✅ Caja General guardada correctamente', 'success');
+  }
+
+  // Función para editar configuración de Caja General (versión 2 - sin restricciones)
+  function editarCajaGeneral() {
+    // Edición directa sin confirmación
+    
+    // Habilitar campos
+    document.getElementById('saldo-caja-general').disabled = false;
+    document.getElementById('banco-caja-general').disabled = false;
+    document.getElementById('numero-caja-general').disabled = false;
+    
+    // Mantener ambos botones activos
+    const editBtn = document.getElementById('editCajaGeneralBtn');
+    const saveBtn = document.getElementById('saveCajaGeneralBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    mostrarNotificacion('✏️ Modo edición activado para Caja General', 'success');
+  }
+
+  // Función para guardar configuración de Cuenta Corriente
+  function guardarCuentaCorriente() {
+    const saldo = document.getElementById('saldo-cta-corriente-1').value;
+    const banco = document.getElementById('banco-cta-corriente-1').value;
+    const numero = document.getElementById('numero-cta-corriente-1').value;
+    
+    if (!saldo || parseFloat(saldo) < 0) {
+      mostrarNotificacion('❌ Debe ingresar un saldo válido para Cuenta Corriente', 'error');
+      return;
+    }
+    
+    // Actualizar título dinámico si hay número de cuenta
+    const titulo = document.getElementById('cuentaCorrienteTitle');
+    if (numero && numero.trim() !== '') {
+      titulo.innerHTML = '<i class="bi bi-credit-card-2-front"></i> Cuenta Corriente N° ' + numero;
+    }
+    
+    // Mantener campos habilitados (sin bloqueo)
+    document.getElementById('saldo-cta-corriente-1').disabled = false;
+    document.getElementById('banco-cta-corriente-1').disabled = false;
+    document.getElementById('numero-cta-corriente-1').disabled = false;
+    
+    // Mantener ambos botones activos
+    const editBtn = document.getElementById('editCuentaCorrienteBtn');
+    const saveBtn = document.getElementById('saveCuentaCorrienteBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    mostrarNotificacion('✅ Cuenta Corriente guardada correctamente', 'success');
+  }
+
+  // Función para editar configuración de Cuenta Corriente (versión 2 - sin restricciones)
+  function editarCuentaCorriente() {
+    // Edición directa sin confirmación
+    
+    // Habilitar campos
+    document.getElementById('saldo-cta-corriente-1').disabled = false;
+    document.getElementById('banco-cta-corriente-1').disabled = false;
+    document.getElementById('numero-cta-corriente-1').disabled = false;
+    
+    // Mantener ambos botones activos
+    const editBtn = document.getElementById('editCuentaCorrienteBtn');
+    const saveBtn = document.getElementById('saveCuentaCorrienteBtn');
+    editBtn.style.display = 'inline-flex';
+    saveBtn.style.display = 'inline-flex';
+    
+    mostrarNotificacion('✏️ Modo edición activado para Cuenta Corriente', 'success');
+  }
+  
+  // Función para editar configuración de Cuenta de Ahorro
+  function editarCuentaAhorro() {
+    // Edición directa sin confirmación
+    
+    // Habilitar campos para edición
+    document.getElementById('saldo-cuenta-ahorro').disabled = false;
+    document.getElementById('banco-cuenta-ahorro').disabled = false;
+    document.getElementById('numero-cuenta-ahorro').disabled = false;
+    
+    // Cambiar apariencia visual
+    const cuentaAhorroItem = document.querySelector('[data-account-type="cuenta_ahorro"]');
+    cuentaAhorroItem.classList.add('editing');
+    cuentaAhorroItem.classList.remove('saved');
+    
+    // Cambiar botones
+    const editBtn = document.getElementById('editCuentaAhorroBtn');
+    const saveBtn = document.getElementById('saveCuentaAhorroBtn');
+    editBtn.style.display = 'none';
+    saveBtn.style.display = 'inline-flex';
+    
+    // Ocultar estado de guardado
+    const statusDiv = document.getElementById('cuentaAhorroStatus');
+    statusDiv.style.display = 'none';
+    
+    // Restaurar título original
+    const titleElement = document.getElementById('cuentaAhorroTitle');
+    titleElement.innerHTML = '<i class="bi bi-piggy-bank"></i> Cuenta de Ahorro';
+    
+    mostrarNotificacion('✏️ Modo edición activado para Cuenta de Ahorro', 'warning');
+  }
+
+  // Función para alternar modo edición
+  function toggleEditMode() {
+    const inputs = document.querySelectorAll('#cuentasInicialesForm input, #cuentasInicialesForm select');
+    const isDisabled = inputs[0].disabled;
+    
+    inputs.forEach(input => {
+      input.disabled = !isDisabled;
+    });
+    
+    const editBtn = document.getElementById('editConfigBtn');
+    const warningText = document.getElementById('warningText');
+    
+    if (isDisabled) {
+      editBtn.innerHTML = '<i class="bi bi-lock"></i> Bloquear';
+      warningText.textContent = 'MODO EDICIÓN ACTIVADO: Puede modificar la configuración existente.';
+      mostrarNotificacion('⚠️ Modo edición activado', 'warning');
+    } else {
+      editBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Editar';
+      warningText.textContent = '¿Está seguro(a) de guardar los cambios? Esta operación solo se podrá realizar una sola vez.';
+      mostrarNotificacion('🔒 Modo edición desactivado', 'info');
+    }
+  }
+
+  // Función para configurar cuentas iniciales (MEJORADA)
   function configurarCuentasIniciales(e) {
     e.preventDefault();
     
@@ -1018,53 +1991,194 @@
       return;
     }
     
-    // Obtener valores del formulario
-    saldosCuentas.caja_general = parseFloat(document.getElementById('saldo-caja-general').value) || 0;
-    saldosCuentas.cuenta_corriente_1 = parseFloat(document.getElementById('saldo-cta-corriente-1').value) || 0;
-    saldosCuentas.cuenta_corriente_2 = parseFloat(document.getElementById('saldo-cta-corriente-2').value) || 0;
-    saldosCuentas.cuenta_ahorro = parseFloat(document.getElementById('saldo-cuenta-ahorro').value) || 0;
+    // Recopilar datos de todas las cuentas dinámicamente
+    const accountItems = document.querySelectorAll('.account-item');
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('orgId', {{ $orgId }});
+    formData.append('responsable', document.getElementById('responsable').value);
     
-    // Guardar detalles de cuentas
-    accountDetails.caja_general = {
-      banco: document.getElementById('banco-caja-general').value,
-      numero: document.getElementById('numero-caja-general').value
-    };
+    let totalCuentas = 0;
+    let totalSaldo = 0;
     
-    accountDetails.cuenta_corriente_1 = {
-      banco: document.getElementById('banco-cta-corriente-1').value,
-      numero: document.getElementById('numero-cta-corriente-1').value
-    };
-    
-    accountDetails.cuenta_corriente_2 = {
-      banco: document.getElementById('banco-cta-corriente-2').value,
-      numero: document.getElementById('numero-cta-corriente-2').value
-    };
-    
-    accountDetails.cuenta_ahorro = {
-      banco: document.getElementById('banco-cuenta-ahorro').value,
-      numero: document.getElementById('numero-cuenta-ahorro').value
-    };
-    
-    // Guardar en localStorage
-    localStorage.setItem('saldosCuentas', JSON.stringify(saldosCuentas));
-    guardarDetallesCuentas();
-    localStorage.setItem('initialAccountsSet', 'true');
-    initialAccountsSet = true;
-    
-    // Bloquear formulario
-    const inputs = document.querySelectorAll('#cuentasInicialesForm input, #cuentasInicialesForm select');
-    inputs.forEach(input => {
-      input.disabled = true;
+    accountItems.forEach(item => {
+      const accountType = item.dataset.accountType;
+      const saldoInput = item.querySelector('input[type="number"]');
+      const bancoSelect = item.querySelector('select');
+      const numeroInput = item.querySelector('input[type="text"]');
+      
+      if (saldoInput && saldoInput.value) {
+        const saldo = parseFloat(saldoInput.value);
+        totalSaldo += saldo;
+        totalCuentas++;
+        
+        formData.append(`saldo_${accountType}`, saldo);
+        formData.append(`banco_${accountType}`, bancoSelect.value);
+        formData.append(`numero_${accountType}`, numeroInput.value);
+      }
     });
     
-    // Actualizar UI
-    actualizarSaldosCuentas();
-    mostrarNotificacion('Cuentas iniciales guardadas correctamente');
+    // Mostrar indicador de carga
+    mostrarNotificacion(`⏳ Guardando ${totalCuentas} cuentas con saldo total de $${totalSaldo.toLocaleString()}...`, 'info');
+
+    // Enviar al servidor
+    fetch('/configuracion-cuentas-iniciales', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Actualizar localStorage para compatibilidad
+        accountItems.forEach(item => {
+          const accountType = item.dataset.accountType;
+          const saldoInput = item.querySelector('input[type="number"]');
+          const bancoSelect = item.querySelector('select');
+          const numeroInput = item.querySelector('input[type="text"]');
+          
+          if (saldoInput && saldoInput.value) {
+            const saldo = parseFloat(saldoInput.value);
+            saldosCuentas[accountType] = saldo;
+            
+            accountDetails[accountType] = {
+              banco: bancoSelect.value,
+              numero: numeroInput.value
+            };
+          }
+        });
+        
+        // Guardar en localStorage
+        localStorage.setItem('saldosCuentas', JSON.stringify(saldosCuentas));
+        guardarDetallesCuentas();
+        localStorage.setItem('initialAccountsSet', 'true');
+        initialAccountsSet = true;
+        
+        // Bloquear formulario y mostrar botón editar
+        const inputs = document.querySelectorAll('#cuentasInicialesForm input, #cuentasInicialesForm select');
+        inputs.forEach(input => {
+          input.disabled = true;
+        });
+        
+        document.getElementById('editConfigBtn').style.display = 'block';
+        document.getElementById('addAccountBtn').style.display = 'none';
+        
+        // Actualizar UI
+        actualizarSaldosCuentas();
+        mostrarNotificacion(`✅ ${totalCuentas} cuentas guardadas exitosamente en la base de datos! Total: $${totalSaldo.toLocaleString()}`, 'success');
+        
+        // Cerrar modal después de 3 segundos
+        setTimeout(() => {
+          document.getElementById('cuentasInicialesModal').classList.remove('show');
+        }, 3000);
+        
+      } else {
+        mostrarNotificacion('❌ Error al guardar: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar los datos', 'error');
+    });
+  }
+
+  // Función original mantenida para compatibilidad
+  function configurarCuentasInicialesOriginal(e) {
+    e.preventDefault();
     
-    // Cerrar modal después de 2 segundos
-    setTimeout(() => {
-      document.getElementById('cuentasInicialesModal').classList.remove('show');
-    }, 2000);
+    if (!confirm('¿Está seguro(a) de guardar los cambios? Esta operación solo se podrá realizar una sola vez.')) {
+      return;
+    }
+    
+    // Obtener valores del formulario
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('orgId', {{ $orgId }});
+    
+    // Saldos
+    formData.append('saldo_caja_general', document.getElementById('saldo-caja-general').value);
+    formData.append('saldo_cta_corriente_1', document.getElementById('saldo-cta-corriente-1').value);
+    formData.append('saldo_cta_corriente_2', document.getElementById('saldo-cta-corriente-2').value);
+    formData.append('saldo_cuenta_ahorro', document.getElementById('saldo-cuenta-ahorro').value);
+    
+    // Bancos (IDs de la base de datos)
+    formData.append('banco_caja_general', document.getElementById('banco-caja-general').value);
+    formData.append('banco_cta_corriente_1', document.getElementById('banco-cta-corriente-1').value);
+    formData.append('banco_cta_corriente_2', document.getElementById('banco-cta-corriente-2').value);
+    formData.append('banco_cuenta_ahorro', document.getElementById('banco-cuenta-ahorro').value);
+    
+    // Números de cuenta
+    formData.append('numero_caja_general', document.getElementById('numero-caja-general').value);
+    formData.append('numero_cta_corriente_1', document.getElementById('numero-cta-corriente-1').value);
+    formData.append('numero_cta_corriente_2', document.getElementById('numero-cta-corriente-2').value);
+    formData.append('numero_cuenta_ahorro', document.getElementById('numero-cuenta-ahorro').value);
+    
+    // Responsable
+    formData.append('responsable', document.getElementById('responsable').value);
+    
+    // Enviar al servidor
+    fetch('/configuracion-cuentas-iniciales', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Guardar en localStorage para compatibilidad con código existente
+        saldosCuentas.caja_general = parseFloat(document.getElementById('saldo-caja-general').value) || 0;
+        saldosCuentas.cuenta_corriente_1 = parseFloat(document.getElementById('saldo-cta-corriente-1').value) || 0;
+        saldosCuentas.cuenta_corriente_2 = parseFloat(document.getElementById('saldo-cta-corriente-2').value) || 0;
+        saldosCuentas.cuenta_ahorro = parseFloat(document.getElementById('saldo-cuenta-ahorro').value) || 0;
+        
+        // Guardar detalles de cuentas
+        accountDetails.caja_general = {
+          banco: document.getElementById('banco-caja-general').value,
+          numero: document.getElementById('numero-caja-general').value
+        };
+        
+        accountDetails.cuenta_corriente_1 = {
+          banco: document.getElementById('banco-cta-corriente-1').value,
+          numero: document.getElementById('numero-cta-corriente-1').value
+        };
+        
+        accountDetails.cuenta_corriente_2 = {
+          banco: document.getElementById('banco-cta-corriente-2').value,
+          numero: document.getElementById('numero-cta-corriente-2').value
+        };
+        
+        accountDetails.cuenta_ahorro = {
+          banco: document.getElementById('banco-cuenta-ahorro').value,
+          numero: document.getElementById('numero-cuenta-ahorro').value
+        };
+        
+        // Guardar en localStorage
+        localStorage.setItem('saldosCuentas', JSON.stringify(saldosCuentas));
+        guardarDetallesCuentas();
+        localStorage.setItem('initialAccountsSet', 'true');
+        initialAccountsSet = true;
+        
+        // Bloquear formulario
+        const inputs = document.querySelectorAll('#cuentasInicialesForm input, #cuentasInicialesForm select');
+        inputs.forEach(input => {
+          input.disabled = true;
+        });
+        
+        // Actualizar UI
+        actualizarSaldosCuentas();
+        mostrarNotificacion('✅ Cuentas iniciales y bancos guardados en la base de datos correctamente');
+        
+        // Cerrar modal después de 2 segundos
+        setTimeout(() => {
+          document.getElementById('cuentasInicialesModal').classList.remove('show');
+        }, 2000);
+        
+      } else {
+        mostrarNotificacion('❌ Error al guardar: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar los datos', 'error');
+    });
   }
 
   // Función para registrar un ingreso
@@ -1083,38 +2197,68 @@
       mostrarNotificacion('El monto debe ser mayor a cero', 'error');
       return;
     }
-    
-    // Crear movimiento
-    const movimiento = {
-      id: Date.now(),
-      fecha,
-      tipo: 'ingreso',
-      nro_dcto,
-      categoria,
-      cuenta_destino,
-      descripcion,
-      monto,
-      timestamp: new Date().getTime()
-    };
-    
-    // Agregar a la lista de movimientos
-    movimientos.push(movimiento);
-    localStorage.setItem('movimientos', JSON.stringify(movimientos));
-    
-    // Actualizar saldo de la cuenta destino
-    saldosCuentas[cuenta_destino] += monto;
-    actualizarSaldosCuentas();
-    
-    // Actualizar UI
-    actualizarTotales();
-    actualizarTablaMovimientos();
-    
-    // Actualizar libro de caja tabular si está disponible
-    if (window.actualizarTablaLibroCaja) window.actualizarTablaLibroCaja();
-    // Mostrar notificación y cerrar modal
-    mostrarNotificacion('¡Ingreso registrado correctamente!', 'success');
-    document.getElementById('ingresosModal').classList.remove('show');
-    document.getElementById('ingresosForm').reset();
+
+    // Preparar datos para envío
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('fecha', fecha);
+    formData.append('nro_dcto', nro_dcto);
+    formData.append('categoria', categoria); // Cambiado de categoria_id a categoria
+    formData.append('cuenta_destino', cuenta_destino);
+    formData.append('descripcion', descripcion);
+    formData.append('monto', monto);
+
+    // Mostrar indicador de carga
+    mostrarNotificacion('⏳ Guardando ingreso...', 'info');
+
+    // Enviar al servidor
+    fetch(`/{{ $orgId }}/ingresos`, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Actualizar localStorage para compatibilidad
+        const movimiento = {
+          id: Date.now(),
+          fecha,
+          tipo: 'ingreso',
+          nro_dcto,
+          categoria: categoria,
+          cuenta_destino,
+          descripcion,
+          monto,
+          timestamp: new Date().getTime()
+        };
+        
+        movimientos.push(movimiento);
+        localStorage.setItem('movimientos', JSON.stringify(movimientos));
+        
+        // Actualizar saldo local
+        saldosCuentas[cuenta_destino] += monto;
+        actualizarSaldosCuentas();
+        
+        // Actualizar UI
+        actualizarTotales();
+        actualizarTablaMovimientos();
+        
+        // Actualizar libro de caja tabular si está disponible
+        if (window.actualizarTablaLibroCaja) window.actualizarTablaLibroCaja();
+        
+        // Mostrar notificación y cerrar modal
+        mostrarNotificacion(`✅ Ingreso registrado correctamente en la base de datos! Nuevo saldo: $${data.nuevo_saldo.toLocaleString()}`, 'success');
+        document.getElementById('ingresosModal').classList.remove('show');
+        document.getElementById('ingresosForm').reset();
+        
+      } else {
+        mostrarNotificacion('❌ Error: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar el ingreso', 'error');
+    });
   }
 
   // Función para registrar un egreso
@@ -1135,46 +2279,72 @@
       mostrarNotificacion('El monto debe ser mayor a cero', 'error');
       return;
     }
-    
-    // Validar saldo suficiente
-    if (saldosCuentas[cuenta_origen] < monto) {
-      mostrarNotificacion('Saldo insuficiente en la cuenta seleccionada', 'error');
-      return;
-    }
-    
-    // Crear movimiento
-    const movimiento = {
-      id: Date.now(),
-      fecha,
-      tipo: 'egreso',
-      nro_dcto,
-      categoria,
-      cuenta_origen,
-      razon_social,
-      rut_proveedor,
-      descripcion,
-      monto,
-      timestamp: new Date().getTime()
-    };
-    
-    // Agregar a la lista de movimientos
-    movimientos.push(movimiento);
-    localStorage.setItem('movimientos', JSON.stringify(movimientos));
-    
-    // Actualizar saldo de la cuenta origen
-    saldosCuentas[cuenta_origen] -= monto;
-    actualizarSaldosCuentas();
-    
-    // Actualizar UI
-    actualizarTotales();
-    actualizarTablaMovimientos();
-    
-    // Actualizar libro de caja tabular si está disponible
-    if (window.actualizarTablaLibroCaja) window.actualizarTablaLibroCaja();
-    // Mostrar notificación y cerrar modal
-    mostrarNotificacion('¡Egreso registrado correctamente!', 'success');
-    document.getElementById('egresosModal').classList.remove('show');
-    document.getElementById('egresosForm').reset();
+
+    // Preparar datos para envío
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    formData.append('fecha', fecha);
+    formData.append('nro_dcto', nro_dcto);
+    formData.append('categoria', categoria);
+    formData.append('cuenta_origen', cuenta_origen);
+    formData.append('razon_social', razon_social);
+    formData.append('rut_proveedor', rut_proveedor);
+    formData.append('descripcion', descripcion);
+    formData.append('monto', monto);
+
+    // Mostrar indicador de carga
+    mostrarNotificacion('⏳ Guardando egreso...', 'info');
+
+    // Enviar al servidor
+    fetch(`/{{ $orgId }}/egresos`, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Actualizar localStorage para compatibilidad
+        const movimiento = {
+          id: Date.now(),
+          fecha,
+          tipo: 'egreso',
+          nro_dcto,
+          categoria: categoria,
+          cuenta_origen,
+          razon_social,
+          rut_proveedor,
+          descripcion,
+          monto,
+          timestamp: new Date().getTime()
+        };
+        
+        movimientos.push(movimiento);
+        localStorage.setItem('movimientos', JSON.stringify(movimientos));
+        
+        // Actualizar saldo local
+        saldosCuentas[cuenta_origen] -= monto;
+        actualizarSaldosCuentas();
+        
+        // Actualizar UI
+        actualizarTotales();
+        actualizarTablaMovimientos();
+        
+        // Actualizar libro de caja tabular si está disponible
+        if (window.actualizarTablaLibroCaja) window.actualizarTablaLibroCaja();
+        
+        // Mostrar notificación y cerrar modal
+        mostrarNotificacion(`✅ Egreso registrado correctamente en la base de datos! Nuevo saldo: $${data.nuevo_saldo.toLocaleString()}`, 'success');
+        document.getElementById('egresosModal').classList.remove('show');
+        document.getElementById('egresosForm').reset();
+        
+      } else {
+        mostrarNotificacion('❌ Error: ' + (data.message || 'Error desconocido'), 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      mostrarNotificacion('❌ Error de conexión al guardar el egreso', 'error');
+    });
   }
 
   // Función para registrar un giro (transferencia entre cuentas)
@@ -1725,62 +2895,263 @@
 
   // Inicialización al cargar la página
   document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM cargado - iniciando configuración de eventos');
+    
+    // Verificar que los elementos principales existan
+    const elementosVerificar = ['ingresosBtn', 'egresosBtn', 'balanceBtn', 'conciliacionBtn'];
+    elementosVerificar.forEach(id => {
+      const elemento = document.getElementById(id);
+      if (elemento) {
+        console.log(`✅ Elemento ${id} encontrado`);
+      } else {
+        console.error(`❌ Elemento ${id} NO encontrado`);
+      }
+    });
     // Manejar TODOS los botones "volver"
     document.querySelectorAll('button.volver').forEach(function(btn) {
       btn.addEventListener('click', volverARegistro);
     });
 
     // Configurar evento para formulario de cuentas iniciales
-    document.getElementById('cuentasInicialesForm').addEventListener('submit', configurarCuentasIniciales);
+    const cuentasInicialesForm = document.getElementById('cuentasInicialesForm');
+    if (cuentasInicialesForm) {
+      cuentasInicialesForm.addEventListener('submit', configurarCuentasIniciales);
+    }
     
     // Botón para abrir modal de cuentas iniciales
-    document.getElementById('cuentasInicialesBtn').addEventListener('click', () => {
-      document.getElementById('cuentasInicialesModal').classList.add('show');
-    });
+    const cuentasInicialesBtn = document.getElementById('cuentasInicialesBtn');
+    if (cuentasInicialesBtn) {
+      cuentasInicialesBtn.addEventListener('click', () => {
+        console.log('🔍 DEBUG: Abriendo modal de configuración de cuentas');
+        document.getElementById('cuentasInicialesModal').classList.add('show');
+      });
+    }
     
     // Cerrar modal de cuentas iniciales
-    document.getElementById('closeCuentasInicialesModal').addEventListener('click', () => {
-      document.getElementById('cuentasInicialesModal').classList.remove('show');
+    const closeCuentasInicialesModal = document.getElementById('closeCuentasInicialesModal');
+    if (closeCuentasInicialesModal) {
+      closeCuentasInicialesModal.addEventListener('click', () => {
+        console.log('🔍 DEBUG: Cerrando modal de configuración de cuentas');
+        document.getElementById('cuentasInicialesModal').classList.remove('show');
+      });
+    }
+
+    // ===============================
+    // EVENT LISTENERS PARA FUNCIONALIDADES AVANZADAS DEL MODAL
+    // ===============================
+    
+    // Botón agregar cuenta
+    const addAccountBtn = document.getElementById('addAccountBtn');
+    if (addAccountBtn) {
+      addAccountBtn.addEventListener('click', agregarNuevaCuenta);
+    }
+    
+    // Botón editar configuración
+    const editConfigBtn = document.getElementById('editConfigBtn');
+    if (editConfigBtn) {
+      editConfigBtn.addEventListener('click', toggleEditMode);
+    }
+    
+    // Botón vista previa
+    const previewBtn = document.getElementById('previewBtn');
+    if (previewBtn) {
+      previewBtn.addEventListener('click', mostrarVistaPrevia);
+    }
+    
+    // Botón resetear formulario
+    const resetFormBtn = document.getElementById('resetFormBtn');
+    if (resetFormBtn) {
+      resetFormBtn.addEventListener('click', resetearFormulario);
+    }
+
+    // ===============================
+    // EVENT LISTENERS PARA CAJA GENERAL
+    // ===============================
+    
+    // Botón guardar Caja General
+    const saveCajaGeneralBtn = document.getElementById('saveCajaGeneralBtn');
+    if (saveCajaGeneralBtn) {
+      saveCajaGeneralBtn.addEventListener('click', function() {
+        console.log('🔍 DEBUG: Click en saveCajaGeneralBtn detectado');
+        console.log('🔍 DEBUG: Elemento button:', this);
+        console.log('🔍 DEBUG: Disabled:', this.disabled);
+        console.log('🔍 DEBUG: Style pointer-events:', this.style.pointerEvents);
+        guardarCajaGeneral();
+      });
+    }
+    
+    // Botón editar Caja General
+    const editCajaGeneralBtn = document.getElementById('editCajaGeneralBtn');
+    if (editCajaGeneralBtn) {
+      editCajaGeneralBtn.addEventListener('click', function() {
+        console.log('🔍 DEBUG: Click en editCajaGeneralBtn detectado');
+        console.log('🔍 DEBUG: Elemento button:', this);
+        editarCajaGeneral();
+      });
+    }
+
+    // ===============================
+    // EVENT LISTENERS PARA CUENTA CORRIENTE
+    // ===============================
+    
+    // Botón guardar Cuenta Corriente
+    const saveCuentaCorrienteBtn = document.getElementById('saveCuentaCorrienteBtn');
+    if (saveCuentaCorrienteBtn) {
+      saveCuentaCorrienteBtn.addEventListener('click', function() {
+        console.log('🔍 DEBUG: Click en saveCuentaCorrienteBtn detectado');
+        guardarCuentaCorriente();
+      });
+    }
+    
+    // Botón editar Cuenta Corriente
+    const editCuentaCorrienteBtn = document.getElementById('editCuentaCorrienteBtn');
+    if (editCuentaCorrienteBtn) {
+      editCuentaCorrienteBtn.addEventListener('click', function() {
+        console.log('🔍 DEBUG: Click en editCuentaCorrienteBtn detectado');
+        editarCuentaCorriente();
+      });
+    }
+
+    // ===============================
+    // EVENT LISTENERS PARA CUENTA DE AHORRO
+    // ===============================
+    
+    // Botón guardar Cuenta de Ahorro
+    const saveCuentaAhorroBtn = document.getElementById('saveCuentaAhorroBtn');
+    if (saveCuentaAhorroBtn) {
+      saveCuentaAhorroBtn.addEventListener('click', guardarCuentaAhorro);
+    }
+    
+    // Botón editar Cuenta de Ahorro
+    const editCuentaAhorroBtn = document.getElementById('editCuentaAhorroBtn');
+    if (editCuentaAhorroBtn) {
+      editCuentaAhorroBtn.addEventListener('click', editarCuentaAhorro);
+    }
+    
+    // Event listeners para botones de eliminar cuenta (cuentas básicas)
+    document.querySelectorAll('.remove-account-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const accountType = this.dataset.account;
+        eliminarCuenta(accountType);
+      });
+    });
+    
+    // Validar campos dinámicamente
+    document.addEventListener('input', function(e) {
+      if (e.target.matches('#cuentasInicialesForm input[type="number"]')) {
+        const value = parseFloat(e.target.value);
+        if (value < 0) {
+          e.target.style.borderColor = '#dc3545';
+          mostrarNotificacion('⚠️ El saldo no puede ser negativo', 'warning');
+        } else {
+          e.target.style.borderColor = '#ddd';
+        }
+      }
+    });
+    
+    // Formatear números de cuenta automáticamente
+    document.addEventListener('input', function(e) {
+      if (e.target.matches('#cuentasInicialesForm input[type="text"]') && 
+          e.target.placeholder.includes('Ej: 12345678-9')) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 8) {
+          value = value.substring(0, 8) + '-' + value.substring(8, 9);
+        }
+        e.target.value = value;
+      }
     });
     
     // Configurar eventos para botones principales
-    document.getElementById('ingresosBtn').addEventListener('click', () => {
-      document.getElementById('ingresosModal').classList.add('show');
-      const nroDctoInput = document.getElementById('nro-dcto-ingresos');
-      if (nroDctoInput) {
-        nroDctoInput.value = generarNumeroComprobante('ingreso');
-        nroDctoInput.readOnly = true;
-      }
-      const fechaInput = document.getElementById('fecha-ingresos');
-      if (fechaInput) {
-        fechaInput.value = obtenerFechaActual();
-        fechaInput.readOnly = true;
-      }
-    });
-    document.getElementById('egresosBtn').addEventListener('click', () => {
-      document.getElementById('egresosModal').classList.add('show');
-      const nroDctoInput = document.getElementById('nro-dcto-egresos');
-      if (nroDctoInput) {
-        nroDctoInput.value = generarNumeroComprobante('egreso');
-        nroDctoInput.readOnly = true;
-      }
-      const fechaInput = document.getElementById('fecha-egresos');
-      if (fechaInput) {
-        fechaInput.value = obtenerFechaActual();
-        fechaInput.readOnly = true;
-      }
-    });
+    console.log('🔍 DEBUG: Configurando event listeners para botones principales');
+    
+    const ingresosBtn = document.getElementById('ingresosBtn');
+    if (ingresosBtn) {
+      console.log('🔍 DEBUG: Botón ingresosBtn encontrado:', ingresosBtn);
+      console.log('🔍 DEBUG: ingresosBtn estado inicial:', {
+        disabled: ingresosBtn.disabled,
+        display: ingresosBtn.style.display,
+        pointerEvents: getComputedStyle(ingresosBtn).pointerEvents,
+        visibility: getComputedStyle(ingresosBtn).visibility,
+        classList: Array.from(ingresosBtn.classList)
+      });
+      
+      ingresosBtn.addEventListener('click', (e) => {
+        console.log('🔍 DEBUG: ¡¡¡ CLICK DETECTADO EN INGRESOS !!!');
+        console.log('🔍 DEBUG: Event object:', e);
+        console.log('🔍 DEBUG: Target:', e.target);
+        console.log('🔍 DEBUG: CurrentTarget:', e.currentTarget);
+        
+        document.getElementById('ingresosModal').classList.add('show');
+        const nroDctoInput = document.getElementById('nro-dcto-ingresos');
+        if (nroDctoInput) {
+          nroDctoInput.value = generarNumeroComprobante('ingreso');
+          nroDctoInput.readOnly = true;
+        }
+        const fechaInput = document.getElementById('fecha-ingresos');
+        if (fechaInput) {
+          fechaInput.value = obtenerFechaActual();
+          fechaInput.readOnly = true;
+        }
+      });
+      
+      // Forzar propiedades del botón
+      ingresosBtn.style.pointerEvents = 'auto';
+      ingresosBtn.style.cursor = 'pointer';
+      ingresosBtn.disabled = false;
+      
+    } else {
+      console.error('❌ DEBUG: Elemento ingresosBtn NO encontrado');
+    }
+    
+    const egresosBtn = document.getElementById('egresosBtn');
+    if (egresosBtn) {
+      console.log('🔍 DEBUG: Botón egresosBtn encontrado:', egresosBtn);
+      console.log('🔍 DEBUG: egresosBtn estado inicial:', {
+        disabled: egresosBtn.disabled,
+        display: egresosBtn.style.display,
+        pointerEvents: getComputedStyle(egresosBtn).pointerEvents,
+        visibility: getComputedStyle(egresosBtn).visibility,
+        classList: Array.from(egresosBtn.classList)
+      });
+      
+      egresosBtn.addEventListener('click', (e) => {
+        console.log('🔍 DEBUG: ¡¡¡ CLICK DETECTADO EN EGRESOS !!!');
+        console.log('🔍 DEBUG: Event object:', e);
+        
+        document.getElementById('egresosModal').classList.add('show');
+        const nroDctoInput = document.getElementById('nro-dcto-egresos');
+        if (nroDctoInput) {
+          nroDctoInput.value = generarNumeroComprobante('egreso');
+          nroDctoInput.readOnly = true;
+        }
+        const fechaInput = document.getElementById('fecha-egresos');
+        if (fechaInput) {
+          fechaInput.value = obtenerFechaActual();
+          fechaInput.readOnly = true;
+        }
+      });
+      
+      // Forzar propiedades del botón
+      egresosBtn.style.pointerEvents = 'auto';
+      egresosBtn.style.cursor = 'pointer';
+      egresosBtn.disabled = false;
+      
+    } else {
+      console.error('❌ DEBUG: Elemento egresosBtn NO encontrado');
+    }
 
-    document.getElementById('giroDepositosBtn').addEventListener('click', () => {
-      document.getElementById('girosDepositosSection').style.display = 'block';
-      document.getElementById('registroSection').style.display = 'none';
-      // Establecer fecha actual y no editable en ambos formularios
-      const fechaGiro = document.getElementById('fecha-giro');
-      if (fechaGiro) {
-        fechaGiro.value = obtenerFechaActual();
-        fechaGiro.readOnly = true;
-      }
-      const fechaDeposito = document.getElementById('fecha-deposito');
+    const giroDepositosBtn = document.getElementById('giroDepositosBtn');
+    if (giroDepositosBtn) {
+      giroDepositosBtn.addEventListener('click', () => {
+        document.getElementById('girosDepositosSection').style.display = 'block';
+        document.getElementById('registroSection').style.display = 'none';
+        // Establecer fecha actual y no editable en ambos formularios
+        const fechaGiro = document.getElementById('fecha-giro');
+        if (fechaGiro) {
+          fechaGiro.value = obtenerFechaActual();
+          fechaGiro.readOnly = true;
+        }
+        const fechaDeposito = document.getElementById('fecha-deposito');
       if (fechaDeposito) {
         fechaDeposito.value = obtenerFechaActual();
         fechaDeposito.readOnly = true;
@@ -1802,10 +3173,15 @@
         localStorage.setItem('comprobanteCounter', comprobanteCounter);
       }
     });
+    } else {
+      console.error('❌ DEBUG: Elemento giroDepositosBtn NO encontrado');
+    }
 
-    document.getElementById('libroCajaBtn').addEventListener('click', () => {
-      document.getElementById('registroSection').style.display = 'none';
-      document.getElementById('libroCajaSection').style.display = 'block';
+    const libroCajaBtn = document.getElementById('libroCajaBtn');
+    if (libroCajaBtn) {
+      libroCajaBtn.addEventListener('click', () => {
+        document.getElementById('registroSection').style.display = 'none';
+        document.getElementById('libroCajaSection').style.display = 'block';
 
       // Configurar fechas por defecto (primer y último día del mes actual) y no editables
       const hoy = new Date();
@@ -1823,26 +3199,82 @@
         fechaHasta.readOnly = true;
       }
     });
+    } else {
+      console.error('❌ DEBUG: Elemento libroCajaBtn NO encontrado');
+    }
 
-    document.getElementById('balanceBtn').addEventListener('click', () => {
-      document.getElementById('registroSection').style.display = 'none';
-      document.getElementById('balanceSection').style.display = 'block';
-      inicializarGraficos();
-    });
+    const balanceBtn = document.getElementById('balanceBtn');
+    if (balanceBtn) {
+      console.log('🔍 DEBUG: Botón balanceBtn encontrado:', balanceBtn);
+      console.log('🔍 DEBUG: balanceBtn estado inicial:', {
+        disabled: balanceBtn.disabled,
+        display: balanceBtn.style.display,
+        pointerEvents: getComputedStyle(balanceBtn).pointerEvents,
+        visibility: getComputedStyle(balanceBtn).visibility,
+        classList: Array.from(balanceBtn.classList)
+      });
+      
+      balanceBtn.addEventListener('click', (e) => {
+        console.log('🔍 DEBUG: ¡¡¡ CLICK DETECTADO EN BALANCE !!!');
+        console.log('🔍 DEBUG: Event object:', e);
+        
+        document.getElementById('registroSection').style.display = 'none';
+        document.getElementById('balanceSection').style.display = 'block';
+        inicializarGraficos();
+      });
+      
+      // Forzar propiedades del botón
+      balanceBtn.style.pointerEvents = 'auto';
+      balanceBtn.style.cursor = 'pointer';
+      balanceBtn.disabled = false;
+      
+    } else {
+      console.error('❌ DEBUG: Elemento balanceBtn NO encontrado');
+    }
 
-    document.getElementById('conciliacionBtn').addEventListener('click', () => {
-      document.getElementById('registroSection').style.display = 'none';
-      document.getElementById('conciliacionSection').style.display = 'block';
-    });
+    const conciliacionBtn = document.getElementById('conciliacionBtn');
+    if (conciliacionBtn) {
+      console.log('🔍 DEBUG: Botón conciliacionBtn encontrado:', conciliacionBtn);
+      console.log('🔍 DEBUG: conciliacionBtn estado inicial:', {
+        disabled: conciliacionBtn.disabled,
+        display: conciliacionBtn.style.display,
+        pointerEvents: getComputedStyle(conciliacionBtn).pointerEvents,
+        visibility: getComputedStyle(conciliacionBtn).visibility,
+        classList: Array.from(conciliacionBtn.classList)
+      });
+      
+      conciliacionBtn.addEventListener('click', (e) => {
+        console.log('🔍 DEBUG: ¡¡¡ CLICK DETECTADO EN CONCILIACIÓN !!!');
+        console.log('🔍 DEBUG: Event object:', e);
+        document.getElementById('registroSection').style.display = 'none';
+        document.getElementById('conciliacionSection').style.display = 'block';
+      });
+      
+      // Forzar propiedades del botón
+      conciliacionBtn.style.pointerEvents = 'auto';
+      conciliacionBtn.style.cursor = 'pointer';
+      conciliacionBtn.disabled = false;
+      
+    } else {
+      console.error('❌ DEBUG: Elemento conciliacionBtn NO encontrado');
+      console.error('Elemento conciliacionBtn no encontrado');
+    }
 
-    document.getElementById('informeRubroBtn').addEventListener('click', () => {
-      document.getElementById('registroSection').style.display = 'none';
-      document.getElementById('informeRubroSection').style.display = 'block';
-    });
+    const informeRubroBtn = document.getElementById('informeRubroBtn');
+    if (informeRubroBtn) {
+      informeRubroBtn.addEventListener('click', () => {
+        document.getElementById('registroSection').style.display = 'none';
+        document.getElementById('informeRubroSection').style.display = 'block';
+      });
+    } else {
+      console.error('Elemento informeRubroBtn no encontrado');
+    }
 
-    document.getElementById('movimientosBtn').addEventListener('click', () => {
-      document.getElementById('registroSection').style.display = 'none';
-      document.getElementById('movimientosSection').style.display = 'block';
+    const movimientosBtn = document.getElementById('movimientosBtn');
+    if (movimientosBtn) {
+      movimientosBtn.addEventListener('click', () => {
+        document.getElementById('registroSection').style.display = 'none';
+        document.getElementById('movimientosSection').style.display = 'block';
 
       // Llenar el select de categorías
       const selectCategoria = document.getElementById('filtroCategoria');
@@ -1883,24 +3315,60 @@
       // Actualizar tabla de movimientos
       actualizarTablaMovimientos();
     });
+    } else {
+      console.error('Elemento movimientosBtn no encontrado');
+    }
 
     // Event listeners para cierre de modales
-    document.getElementById('closeIngresosModal').addEventListener('click', () => {
-      document.getElementById('ingresosModal').classList.remove('show');
-      movimientoEditando = null;
-      document.getElementById('ingresosForm').reset();
-    });
+    const closeIngresosModal = document.getElementById('closeIngresosModal');
+    if (closeIngresosModal) {
+      closeIngresosModal.addEventListener('click', () => {
+        document.getElementById('ingresosModal').classList.remove('show');
+        movimientoEditando = null;
+        document.getElementById('ingresosForm').reset();
+      });
+    } else {
+      console.error('Elemento closeIngresosModal no encontrado');
+    }
 
-    document.getElementById('closeEgresosModal').addEventListener('click', () => {
-      document.getElementById('egresosModal').classList.remove('show');
-      document.getElementById('egresosForm').reset();
-    });
+    const closeEgresosModal = document.getElementById('closeEgresosModal');
+    if (closeEgresosModal) {
+      closeEgresosModal.addEventListener('click', () => {
+        document.getElementById('egresosModal').classList.remove('show');
+        document.getElementById('egresosForm').reset();
+      });
+    } else {
+      console.error('Elemento closeEgresosModal no encontrado');
+    }
 
     // Event listeners para formularios
-    document.getElementById('ingresosForm').addEventListener('submit', registrarIngreso);
-    document.getElementById('egresosForm').addEventListener('submit', registrarEgreso);
-    document.getElementById('girosForm').addEventListener('submit', registrarGiro);
-    document.getElementById('depositosForm').addEventListener('submit', registrarDeposito);
+    const ingresosForm = document.getElementById('ingresosForm');
+    if (ingresosForm) {
+      ingresosForm.addEventListener('submit', registrarIngreso);
+    } else {
+      console.error('Elemento ingresosForm no encontrado');
+    }
+    
+    const egresosForm = document.getElementById('egresosForm');
+    if (egresosForm) {
+      egresosForm.addEventListener('submit', registrarEgreso);
+    } else {
+      console.error('Elemento egresosForm no encontrado');
+    }
+    
+    const girosForm = document.getElementById('girosForm');
+    if (girosForm) {
+      girosForm.addEventListener('submit', registrarGiro);
+    } else {
+      console.error('Elemento girosForm no encontrado');
+    }
+    
+    const depositosForm = document.getElementById('depositosForm');
+    if (depositosForm) {
+      depositosForm.addEventListener('submit', registrarDeposito);
+    } else {
+      console.error('Elemento depositosForm no encontrado');
+    }
 
 
     // Cargar datos iniciales
@@ -1976,6 +3444,229 @@
 
             document.getElementById('fechaDesde').valueAsDate = primerDiaMes;
             document.getElementById('fechaHasta').valueAsDate = ultimoDiaMes;
+        }
+        
+        // Función para eliminar completamente las restricciones del modal
+        function eliminarTodasLasRestriccionesModal() {
+            console.log('🔍 DEBUG: Iniciando eliminación de restricciones del modal');
+            
+            // Eliminar clases de bloqueo
+            const items = document.querySelectorAll('[data-account-type]');
+            console.log('🔍 DEBUG: Elementos con data-account-type encontrados:', items.length);
+            items.forEach(item => {
+                console.log('🔍 DEBUG: Procesando item:', item);
+                item.classList.remove('locked', 'disabled');
+            });
+            
+            // Habilitar todos los botones del modal
+            const botones = document.querySelectorAll('#modalConfiguracionCuentas button, #modalConfiguracionCuentas .btn');
+            console.log('🔍 DEBUG: Botones encontrados en modal:', botones.length);
+            botones.forEach(btn => {
+                console.log('🔍 DEBUG: Procesando botón:', btn.id, btn);
+                btn.disabled = false;
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+                btn.style.opacity = '1';
+                btn.style.visibility = 'visible';
+                btn.style.display = 'inline-flex';
+            });
+            
+            // Habilitar todos los campos del modal
+            const campos = document.querySelectorAll('#modalConfiguracionCuentas input, #modalConfiguracionCuentas select');
+            console.log('🔍 DEBUG: Campos encontrados en modal:', campos.length);
+            campos.forEach(campo => {
+                console.log('🔍 DEBUG: Procesando campo:', campo.id, campo);
+                campo.disabled = false;
+                campo.style.backgroundColor = '#fff';
+                campo.style.color = '#212529';
+                campo.style.cursor = 'text';
+                campo.style.pointerEvents = 'auto';
+            });
+            
+            console.log('✅ DEBUG: Todas las restricciones del modal han sido eliminadas');
+        }
+        
+        // Ejecutar la función al cargar la página
+        eliminarTodasLasRestriccionesModal();
+        
+        // Función para diagnosticar el estado de los elementos
+        function diagnosticarEstadoModal() {
+            console.log('🔍 DEBUG: === DIAGNÓSTICO COMPLETO DEL MODAL ===');
+            
+            // Verificar modal principal
+            const modal = document.getElementById('modalConfiguracionCuentas');
+            console.log('🔍 DEBUG: Modal principal encontrado:', !!modal);
+            
+            // Verificar botones específicos
+            const botonesClave = [
+                'saveCajaGeneralBtn',
+                'editCajaGeneralBtn', 
+                'saveCuentaCorrienteBtn',
+                'editCuentaCorrienteBtn'
+            ];
+            
+            botonesClave.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    console.log(`🔍 DEBUG: Botón ${id}:`, {
+                        encontrado: true,
+                        disabled: btn.disabled,
+                        display: btn.style.display,
+                        pointerEvents: btn.style.pointerEvents,
+                        visibility: btn.style.visibility,
+                        opacity: btn.style.opacity,
+                        classList: Array.from(btn.classList)
+                    });
+                } else {
+                    console.log(`❌ DEBUG: Botón ${id} NO encontrado`);
+                }
+            });
+            
+            // Verificar campos específicos
+            const camposClave = [
+                'saldo-caja-general',
+                'banco-caja-general',
+                'numero-caja-general'
+            ];
+            
+            camposClave.forEach(id => {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    console.log(`🔍 DEBUG: Campo ${id}:`, {
+                        encontrado: true,
+                        disabled: campo.disabled,
+                        value: campo.value,
+                        backgroundColor: campo.style.backgroundColor,
+                        color: campo.style.color
+                    });
+                } else {
+                    console.log(`❌ DEBUG: Campo ${id} NO encontrado`);
+                }
+            });
+            
+            console.log('🔍 DEBUG: === FIN DIAGNÓSTICO ===');
+        }
+        
+        // Función específica para diagnosticar x-boton-protegido
+        function diagnosticarBotonesProtegidos() {
+            console.log('🔍 DEBUG: === DIAGNÓSTICO BOTONES PROTEGIDOS ===');
+            
+            const botonesProtegidos = ['ingresosBtn', 'egresosBtn', 'balanceBtn', 'conciliacionBtn'];
+            
+            botonesProtegidos.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    const computedStyle = getComputedStyle(btn);
+                    console.log(`🔍 DEBUG: Botón protegido ${id}:`, {
+                        elemento: btn,
+                        tagName: btn.tagName,
+                        className: btn.className,
+                        disabled: btn.disabled,
+                        tabIndex: btn.tabIndex,
+                        style: {
+                            display: computedStyle.display,
+                            visibility: computedStyle.visibility,
+                            opacity: computedStyle.opacity,
+                            pointerEvents: computedStyle.pointerEvents,
+                            cursor: computedStyle.cursor,
+                            position: computedStyle.position,
+                            zIndex: computedStyle.zIndex
+                        },
+                        atributos: {
+                            'data-disabled': btn.getAttribute('data-disabled'),
+                            'aria-disabled': btn.getAttribute('aria-disabled'),
+                            habilitado: btn.getAttribute('habilitado')
+                        },
+                        parentElement: btn.parentElement,
+                        offsetParent: btn.offsetParent,
+                        boundingRect: btn.getBoundingClientRect()
+                    });
+                    
+                    // Verificar si hay overlays bloqueando
+                    const rect = btn.getBoundingClientRect();
+                    const elementFromPoint = document.elementFromPoint(
+                        rect.left + rect.width / 2, 
+                        rect.top + rect.height / 2
+                    );
+                    
+                    console.log(`🔍 DEBUG: Elemento en punto central de ${id}:`, elementFromPoint);
+                    
+                    if (elementFromPoint !== btn) {
+                        console.log(`⚠️ DEBUG: ¡¡¡ POSIBLE OVERLAY BLOQUEANDO ${id} !!!`);
+                        console.log(`🔍 DEBUG: Elemento bloqueador:`, elementFromPoint);
+                    }
+                } else {
+                    console.log(`❌ DEBUG: Botón protegido ${id} NO encontrado`);
+                }
+            });
+            
+            console.log('🔍 DEBUG: === FIN DIAGNÓSTICO BOTONES PROTEGIDOS ===');
+        }
+        
+        // Ejecutar diagnóstico inicial
+        setTimeout(diagnosticarEstadoModal, 1000);
+        
+        // Ejecutar diagnóstico de botones protegidos
+        setTimeout(diagnosticarBotonesProtegidos, 1500);
+        
+        // Función para forzar habilitación de botones principales
+        function forzarHabilitacionBotonesPrincipales() {
+            console.log('🔧 DEBUG: Forzando habilitación de botones principales');
+            
+            const botonesPrincipales = ['ingresosBtn', 'egresosBtn', 'balanceBtn', 'conciliacionBtn'];
+            
+            botonesPrincipales.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    // Eliminar todas las restricciones posibles
+                    btn.disabled = false;
+                    btn.style.pointerEvents = 'auto !important';
+                    btn.style.cursor = 'pointer !important';
+                    btn.style.opacity = '1 !important';
+                    btn.style.visibility = 'visible !important';
+                    btn.style.display = 'inline-flex !important';
+                    btn.style.zIndex = '1000 !important';
+                    
+                    // Remover atributos que puedan bloquear
+                    btn.removeAttribute('disabled');
+                    btn.removeAttribute('aria-disabled');
+                    btn.removeAttribute('data-disabled');
+                    
+                    // Remover clases que puedan bloquear
+                    btn.classList.remove('disabled', 'blocked', 'inactive');
+                    
+                    console.log(`✅ DEBUG: Botón ${id} forzado a estar habilitado`);
+                } else {
+                    console.log(`❌ DEBUG: Botón ${id} no encontrado para forzar`);
+                }
+            });
+        }
+        
+        // Ejecutar forzado de habilitación
+        setTimeout(forzarHabilitacionBotonesPrincipales, 2000);
+        
+        // También ejecutar cuando se abra el modal
+        const modal = document.getElementById('modalConfiguracionCuentas');
+        if (modal) {
+            modal.addEventListener('shown.bs.modal', eliminarTodasLasRestriccionesModal);
+        }
+        
+        // Interceptar TODOS los clicks para debugging
+        document.addEventListener('click', function(e) {
+            if (e.target.id && (e.target.id.includes('Caja') || e.target.id.includes('Cuenta') || e.target.id.includes('save') || e.target.id.includes('edit'))) {
+                console.log('🔍 DEBUG: Click interceptado en:', e.target.id, e.target);
+                console.log('🔍 DEBUG: Event details:', e);
+                console.log('🔍 DEBUG: Target disabled:', e.target.disabled);
+                console.log('🔍 DEBUG: Target pointer-events:', getComputedStyle(e.target).pointerEvents);
+            }
+        });
+        
+        // Interceptar eventos de submit del formulario
+        const form = document.getElementById('cuentasInicialesForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('🔍 DEBUG: Submit del formulario interceptado:', e);
+            });
         }
     });
 </script>

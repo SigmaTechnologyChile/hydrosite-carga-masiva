@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Org;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\SimpleFacturaController;
+// use App\Http\Controllers\SimpleFacturaController; // COMENTADO - SimpleFactura deshabilitado
 use App\Models\Location;
 use App\Models\Member;
 use App\Models\Order;
@@ -134,8 +134,14 @@ class DteController extends Controller
             $reading = Reading::find($reading_id);
 
             if ($reading && $reading->total > 0 && $reading->folio > 0) {
-                $token = (new SimpleFacturaController)->token($org_id);
+                // COMENTADO - SimpleFactura deshabilitado temporalmente
+                // $token = (new SimpleFacturaController)->token($org_id);
+                
+                // Retornar mensaje informativo
+                return redirect()->back()->with('error', 'La generación de DTE está temporalmente deshabilitada. SimpleFactura en mantenimiento.');
 
+                /*
+                // CÓDIGO ORIGINAL COMENTADO
                 if ($reading->invoice_type == 'boleta') {
                     $data = $this->boleta($reading);
                 } elseif ($reading->invoice_type == 'factura') {
@@ -217,7 +223,14 @@ class DteController extends Controller
             $reading = Reading::find($reading_id);
 
             if ($reading->total > 0 and $reading->folio > 0) {
-                $token       = (new SimpleFacturaController)->token($org_id);
+                // COMENTADO - SimpleFactura deshabilitado temporalmente
+                // $token       = (new SimpleFacturaController)->token($org_id);
+                
+                // Retornar mensaje informativo
+                return response()->json(['message' => 'La generación de timbres está temporalmente deshabilitada. SimpleFactura en mantenimiento.', 'status' => 'disabled']);
+                
+                /*
+                // CÓDIGO ORIGINAL COMENTADO
                 $codeTypeDte = ($reading->invoice_type == 'factura' ? 33 : 41);
                 $data        = '{
                     "credenciales": {
@@ -239,6 +252,7 @@ class DteController extends Controller
                     $reading->save();
                 }
                 return response()->json(['message' => $reading]);
+                */
             } else {
                 //return redirect()->route('orders-summary',$order->order_code);
             }

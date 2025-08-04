@@ -192,4 +192,113 @@ class MovimientoController extends Controller
 
         return redirect()->route('movimientos.index')->with('success', 'Movimiento eliminado correctamente.');
     }
+
+    /**
+     * Guardar ingreso desde modal
+     */
+    public function storeIngreso(Request $request, $orgId)
+    {
+        try {
+            // Validar datos de entrada
+            $request->validate([
+                'fecha' => 'required|date',
+                'nro_dcto' => 'nullable|string|max:50',
+                'categoria' => 'required|string|max:100',
+                'cuenta_destino' => 'required|string|max:50',
+                'descripcion' => 'nullable|string|max:255',
+                'monto' => 'required|numeric|min:0.01'
+            ]);
+
+            // Crear el movimiento
+            $movimiento = Movimiento::create([
+                'org_id' => $orgId,
+                'fecha' => $request->fecha,
+                'tipo' => 'ingreso',
+                'nro_dcto' => $request->nro_dcto,
+                'categoria' => $request->categoria, // Guardar como texto
+                'cuenta_destino' => $request->cuenta_destino,
+                'descripcion' => $request->descripcion,
+                'monto' => $request->monto,
+            ]);
+
+            // Actualizar o crear la cuenta si no existe
+            $cuenta = Cuenta::firstOrCreate(
+                ['nombre' => $request->cuenta_destino, 'org_id' => $orgId],
+                ['saldo' => 0]
+            );
+
+            // Sumar al saldo
+            $cuenta->saldo += $request->monto;
+            $cuenta->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ingreso registrado correctamente',
+                'movimiento_id' => $movimiento->id,
+                'nuevo_saldo' => $cuenta->saldo
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar el ingreso: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Guardar egreso desde modal
+     */
+    public function storeEgreso(Request $request, $orgId)
+    {
+        $data = $request->validate([
+            'fecha' => 'required|date',
+            'nro_dcto' => 'required|string|max:50',
+            'categoria' => 'required|string|max:100',
+            'cuenta_origen' => 'required|string',
+            'razon_social' => 'required|string|max:100',
+            'rut_proveedor' => 'nullable|string|max:20',
+            'descripcion' => 'required|string',
+            'monto' => 'required|numeric|min:0.01',
+        ]);
+
+        // Obtener o crear la cuenta origen
+        $cuenta = Cuenta::firstOrCreate(
+            ['tipo' => $data['cuenta_origen']],
+            ['nombre' => $data['cuenta_origen'], 'saldo_actual' => 0]
+        );
+
+        // Verificar saldo suficiente
+        if ($cuenta->saldo_actual < $data['monto']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saldo insuficiente en la cuenta seleccionada. Saldo actual: $' . number_format($cuenta->saldo_actual, 0, ',', '.')
+            ], 400);
+        }
+
+        // Crear el movimiento
+        $movimiento = Movimiento::create([
+            'tipo' => 'egreso',
+            'fecha' => $data['fecha'],
+            'monto' => $data['monto'],
+            'descripcion' => $data['descripcion'],
+            'nro_dcto' => $data['nro_dcto'],
+            'categoria' => $data['categoria'], // Cambio aquí: de categoria_id a categoria
+            'cuenta_origen_id' => $cuenta->id,
+            'proveedor' => $data['razon_social'],
+            'rut_proveedor' => $data['rut_proveedor'],
+            'creado_en' => now(),
+        ]);
+
+        // Actualizar saldo de la cuenta origen
+        $cuenta->saldo_actual -= $data['monto'];
+        $cuenta->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Egreso registrado correctamente',
+            'movimiento' => $movimiento,
+            'nuevo_saldo' => $cuenta->saldo_actual
+        ]);
+    }
 }

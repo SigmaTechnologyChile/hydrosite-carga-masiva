@@ -15,44 +15,82 @@ class ConfiguracionInicialController extends Controller
     public function guardarDesdeModal(Request $request)
     {
         $data = $request->validate([
+            'orgId' => 'required|integer',
             'saldo_caja_general' => 'required|numeric',
             'saldo_cta_corriente_1' => 'required|numeric',
             'saldo_cta_corriente_2' => 'required|numeric',
             'saldo_cuenta_ahorro' => 'required|numeric',
+            'banco_caja_general' => 'nullable|string',
+            'numero_caja_general' => 'nullable|string',
+            'banco_cta_corriente_1' => 'nullable|string',
+            'numero_cta_corriente_1' => 'nullable|string',
+            'banco_cta_corriente_2' => 'nullable|string',
+            'numero_cta_corriente_2' => 'nullable|string',
+            'banco_cuenta_ahorro' => 'nullable|string',
+            'numero_cuenta_ahorro' => 'nullable|string',
             'responsable' => 'nullable|string|max:100',
         ]);
 
-        // IDs de las cuentas (pueden ajustarse según la estructura real)
+        $orgId = $data['orgId'];
+
+        // Configuraciones de las cuentas con sus datos de banco
         $cuentas = [
-            'caja_general' => ['tipo' => 'caja', 'saldo' => $data['saldo_caja_general']],
-            'cuenta_corriente_1' => ['tipo' => 'corriente', 'saldo' => $data['saldo_cta_corriente_1']],
-            'cuenta_corriente_2' => ['tipo' => 'corriente', 'saldo' => $data['saldo_cta_corriente_2']],
-            'cuenta_ahorro' => ['tipo' => 'ahorro', 'saldo' => $data['saldo_cuenta_ahorro']],
+            'caja_general' => [
+                'tipo' => 'caja_general', 
+                'saldo' => $data['saldo_caja_general'],
+                'banco' => $data['banco_caja_general'],
+                'numero_cuenta' => $data['numero_caja_general']
+            ],
+            'cuenta_corriente_1' => [
+                'tipo' => 'cuenta_corriente_1', 
+                'saldo' => $data['saldo_cta_corriente_1'],
+                'banco' => $data['banco_cta_corriente_1'],
+                'numero_cuenta' => $data['numero_cta_corriente_1']
+            ],
+            'cuenta_corriente_2' => [
+                'tipo' => 'cuenta_corriente_2', 
+                'saldo' => $data['saldo_cta_corriente_2'],
+                'banco' => $data['banco_cta_corriente_2'],
+                'numero_cuenta' => $data['numero_cta_corriente_2']
+            ],
+            'cuenta_ahorro' => [
+                'tipo' => 'cuenta_ahorro', 
+                'saldo' => $data['saldo_cuenta_ahorro'],
+                'banco' => $data['banco_cuenta_ahorro'],
+                'numero_cuenta' => $data['numero_cuenta_ahorro']
+            ],
         ];
 
         foreach ($cuentas as $nombre => $info) {
             // Buscar o crear la cuenta
             $cuenta = \App\Models\Cuenta::firstOrCreate(
-                ['nombre' => $nombre],
-                ['tipo' => $info['tipo'], 'saldo_actual' => $info['saldo']]
+                ['tipo' => $info['tipo']],
+                ['nombre' => $nombre, 'saldo_actual' => $info['saldo']]
             );
-            // Actualizar saldo_actual si ya existe
+            
+            // Actualizar saldo_actual y datos bancarios si ya existe
             $cuenta->saldo_actual = $info['saldo'];
+            $cuenta->banco = $info['banco'];
+            $cuenta->numero_cuenta = $info['numero_cuenta'];
             $cuenta->save();
 
             // Registrar en configuracion_cuentas_iniciales
             \App\Models\ConfiguracionInicial::updateOrCreate(
-                ['cuenta_id' => $cuenta->id],
+                ['cuenta_id' => $cuenta->id, 'org_id' => $orgId],
                 [
-                    'org_id' => 1, // Ajustar si hay multi-organización
                     'saldo_inicial' => $info['saldo'],
                     'responsable' => $data['responsable'] ?? '',
                     'tipo_cuenta' => $nombre,
+                    'banco' => $info['banco'],
+                    'numero_cuenta' => $info['numero_cuenta'],
                 ]
             );
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true, 
+            'message' => 'Configuración de cuentas iniciales guardada correctamente con los bancos seleccionados'
+        ]);
     }
     /**
      * Sincroniza los saldos iniciales de configuracion_cuentas_iniciales con saldo_actual en cuentas
